@@ -66,7 +66,7 @@ export default function GydeSignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-800 via-slate-700 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-t-3xl shadow-2xl overflow-hidden">
         <div className="px-8 py-8">
           <button

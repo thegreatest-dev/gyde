@@ -9,6 +9,7 @@ import Wallet from './pages/Wallet';
 import Statistics from './pages/Statistics';
 import Profile from './pages/Profile';
 import AccSet from './pages/AccSet';
+import Customer from './pages/Customer';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/statistics" element={<Statistics />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/accset" element={<AccSet />} />
+        <Route path="/customer" element={<Customer />} />
       </Routes>
     </Router>
   );

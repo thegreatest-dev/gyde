@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import {
+ // adjust path if needed
+ import React, { useState } from 'react';
+ import {
   CreditCard,
   Plus,
   User,
@@ -12,6 +13,7 @@ import {
 
 import { motion, AnimatePresence } from 'framer-motion';
 import BottomNav from '../Components/BottomNav';
+import { useTheme } from '../Components/ThemeContext';
 
 export default function GydeWallet() {
   const [activeTab, setActiveTab] = useState('payout');
@@ -20,12 +22,12 @@ export default function GydeWallet() {
     bankName: '',
     emailOrPhone: ''
   });
-  // Get dark mode from localStorage
-  const darkMode = (() => {
-    const stored = localStorage.getItem('gyde_dark_mode');
-    return stored === null ? false : stored === 'true';
-  })();
+  const [showTransactions, setShowTransactions] = useState(false);
+  const [openTransactionDetails, setOpenTransactionDetails] = useState({});
 
+  const { darkMode } = useTheme();
+
+  // Get dark mode from localStorage
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -40,6 +42,13 @@ export default function GydeWallet() {
 
   const handleAddFunds = () => {
     console.log('Add funds clicked');
+  };
+
+  const toggleTransactionDetails = (id) => {
+    setOpenTransactionDetails(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
   };
 
   const transactions = [
@@ -60,7 +69,9 @@ export default function GydeWallet() {
       date: 'Jun 15, 2025',
       amount: '₦6,000.00',
       status: 'completed',
-      isNegative: true
+      isNegative: true,
+      category: 'Budget: 6,000.00',
+      subCategory: 'Disbursed to Bank'
     },
     {
       id: 3,
@@ -69,7 +80,9 @@ export default function GydeWallet() {
       date: 'Jun 09, 2025',
       amount: '₦3,000.00',
       status: 'completed',
-      isNegative: true
+      isNegative: true,
+      category: 'Cheat Day: 3,000.00',
+      subCategory: 'Disbursed to wallet'
     }
   ];
 
@@ -94,7 +107,20 @@ export default function GydeWallet() {
             )}
           </div>
           <div>
-            <h3 className="font-semibold text-gray-800">{transaction.title}</h3>
+            <h3 className="font-semibold text-gray-800 flex items-center">
+              {transaction.title}
+              {transaction.category && (
+                <button
+                  type="button"
+                  className="ml-2 p-1 rounded hover:bg-gray-100 focus:outline-none"
+                  onClick={() => toggleTransactionDetails(transaction.id)}
+                >
+                  <motion.span animate={{ rotate: openTransactionDetails[transaction.id] ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  </motion.span>
+                </button>
+              )}
+            </h3>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <Calendar className="w-4 h-4" />
               <span>{transaction.date}</span>
@@ -111,30 +137,48 @@ export default function GydeWallet() {
         </div>
       </div>
       {transaction.category && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-600">Status</span>
-            <span className="text-sm font-medium text-gray-600">Category</span>
-          </div>
-          <div className="flex justify-between items-center mt-1">
-            <span className="bg-gray-800 text-white px-2 py-1 rounded text-xs font-medium">
-              Completed
-            </span>
-            <div className="text-right text-xs text-gray-500">
-              <div>{transaction.category}</div>
-              <div>{transaction.subCategory}</div>
-            </div>
-          </div>
-        </div>
+        <AnimatePresence initial={false}>
+          {openTransactionDetails[transaction.id] && (
+            <motion.div
+              key="details"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="overflow-hidden"
+            >
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-600">Status</span>
+                  <span className="text-sm font-medium text-gray-600">Category</span>
+                </div>
+                <div className="flex justify-between items-center mt-1">
+                  <span className="bg-gray-800 text-white px-2 py-1 rounded text-xs font-medium">
+                    Completed
+                  </span>
+                  <div className="text-right text-xs text-gray-500">
+                    <div>{transaction.category}</div>
+                    <div>{transaction.subCategory}</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       )}
     </motion.div>
   ));
 
   return (
     <>
-      <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-800'}` }>
+      <header className={`border-b shadow-sm ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center">
+          <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : ''}`}>Gyde banking</h1>
+        </div>
+      </header>
+      <div className={`min-h-screen pb-24 transition-all duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-800'}`}>
         <div className="max-w-6xl mx-auto px-4 lg:px-12 py-6">
-          <div className="bg-gradient-to-br from-blue-900 to-blue-700 text-white rounded-3xl p-6 mb-8">
+          <div className={`rounded-3xl p-6 mb-8 text-white ${darkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-blue-900 to-blue-700'}` }>
             <h2 className="text-xl font-semibold">Current Balance</h2>
             <p className="text-3xl font-bold mt-2">₦500,000.00</p>
           </div>
@@ -244,20 +288,35 @@ export default function GydeWallet() {
 
             <div>
               <div className="bg-gradient-to-r from-orange-400 to-orange-500 rounded-3xl p-6 mb-4">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2 cursor-pointer" onClick={() => setShowTransactions(v => !v)}>
                   <h2 className="text-xl font-bold text-white">Transaction History</h2>
                   <div className="flex items-center space-x-2 text-white">
                     <span className="text-sm">All Transactions</span>
-                    <ChevronDown className="w-4 h-4" />
+                    <motion.span animate={{ rotate: showTransactions ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                      <ChevronDown className="w-4 h-4" />
+                    </motion.span>
                   </div>
                 </div>
                 <p className="text-orange-100 text-sm">View your recent transaction history</p>
               </div>
-              <div className="space-y-4">
-                {transactions.map((transaction) => (
-                  <TransactionCard key={transaction.id} transaction={transaction} />
-                ))}
-              </div>
+              <AnimatePresence initial={false}>
+                {showTransactions && (
+                  <motion.div
+                    key="transactions"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="space-y-4">
+                      {transactions.map((transaction) => (
+                        <TransactionCard key={transaction.id} transaction={transaction} />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>

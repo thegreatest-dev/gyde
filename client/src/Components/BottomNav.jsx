@@ -21,10 +21,10 @@ function BottomNav({ darkMode }) {
           <button
             key={tab.name}
             onClick={() => navigate(tab.path)}
-            className={`p-3 rounded-2xl transition-colors ${
+            className={`p-3 rounded-2xl transition-colors font-semibold ${
               location.pathname === tab.path
-                ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-white'
-                : 'text-gray-400 hover:text-gray-600 dark:hover:text-white'
+                ? (darkMode ? 'bg-blue-900 text-white' : 'bg-blue-100 text-blue-900')
+                : (darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-gray-600')
             }`}
           >
             {tab.icon}

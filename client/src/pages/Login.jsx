@@ -28,7 +28,7 @@ export default function GydeLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#023047] via-[#0A4B5B] to-white p-0">
+    <div className="min-h-screen flex items-center justify-center bg-white p-0">
       {isLoading && <LoadingScreen />}
       <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[600px]">
         {/* Left: Logo and welcome (desktop only) */}
