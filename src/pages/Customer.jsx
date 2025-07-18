@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '../Components/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { PieChart, Lock, BarChart2, PiggyBank, Star, ShieldCheck, Headphones } from 'lucide-react';
 import { ArrowLeft } from 'lucide-react';
+import { optimisticUpdate } from '../optimisticUpdate';
 
 export default function Customer() {
   const { darkMode } = useTheme();
   const navigate = useNavigate();
+
+  // State for support inquiries (for optimistic update demo)
+  const [inquiries, setInquiries] = useState([]);
 
   // Support options with icons
   const supportOptions = [
@@ -17,6 +21,20 @@ export default function Customer() {
     { label: 'User Feedback', icon: <Star className="w-8 h-8 mx-auto" /> },
     { label: 'Dispute', icon: <ShieldCheck className="w-8 h-8 mx-auto" /> },
   ];
+
+  // Fake API call for optimistic update demo
+  const fakeApiSendInquiry = (inquiry) => new Promise((resolve, reject) => setTimeout(() => Math.random() > 0.2 ? resolve(inquiry) : reject(new Error('API error')), 1000));
+
+  // Example inquiries state (replace with real state as needed)
+  // const [inquiries, setInquiries] = useState([]);
+  const handleInquiry = (inquiry) => {
+    optimisticUpdate({
+      update: () => setInquiries(prev => [...prev, inquiry]),
+      request: () => fakeApiSendInquiry(inquiry),
+      rollback: () => setInquiries(prev => prev.filter(i => i !== inquiry)),
+      onError: () => alert('Failed to send inquiry.')
+    });
+  };
 
   return (
     <div className={`min-h-screen flex flex-col justify-between transition-all duration-300 ${
@@ -59,7 +77,19 @@ export default function Customer() {
             <span className="font-semibold text-base">Recent Inquiries</span>
             <button className={`text-sm font-medium ${darkMode ? 'text-blue-300' : 'text-blue-600'}`}>More &gt;</button>
           </div>
-          <div className={`rounded-lg text-center py-6 text-gray-400 text-base ${darkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>No records found yet</div>
+          {inquiries.length === 0 ? (
+            <div className={`rounded-lg text-center py-6 text-gray-400 text-base ${darkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>No records found yet</div>
+          ) : (
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+              {inquiries.map((inq, idx) => (
+                <li key={idx} className="py-3 flex flex-col items-start">
+                  <span className="font-medium text-gray-800 dark:text-gray-100">{inq.subject || 'Inquiry'}</span>
+                  {inq.date && <span className="text-xs text-gray-500 dark:text-gray-400">{inq.date}</span>}
+                  {inq.message && <span className="text-sm text-gray-600 dark:text-gray-300 mt-1">{inq.message}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
       {/* Chat Button */}

@@ -66,8 +66,22 @@ export default function GydeSignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-t-3xl shadow-2xl overflow-hidden">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative"
+      style={
+        window.innerWidth >= 768
+          ? { backgroundImage: "url('/backgroundscribble.png')", backgroundSize: '130%', backgroundPosition: 'center' }
+          : {}
+      }
+    >
+      {/* Overlay for desktop only */}
+      {window.innerWidth >= 768 && (
+        <div className="absolute inset-0 bg-white opacity-60 z-0 pointer-events-none"></div>
+      )}
+      <div
+        className="w-full max-w-md rounded-t-3xl shadow-2xl overflow-hidden block bg-white md:bg-white z-10"
+        style={{}}
+      >
         <div className="px-8 py-8">
           <button
             onClick={handleBackToLogin}

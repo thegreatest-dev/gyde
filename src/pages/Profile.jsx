@@ -4,6 +4,7 @@ import BottomNav from '../Components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LogOut, Mail, ShieldCheck, Settings, ArrowLeft } from 'lucide-react';
+import { optimisticUpdate } from '../optimisticUpdate';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -22,6 +23,21 @@ export default function Profile() {
     const stored = localStorage.getItem('gyde_dark_mode');
     return stored === null ? false : stored === 'true';
   })();
+
+  // Example profile state (replace with real state as needed)
+  // const [profile, setProfile] = useState({ name: 'David Alfredo', email: 'davidalfredo@email.com' });
+  // Fake API call for optimistic update demo
+  const fakeApiUpdateProfile = (newProfile) => new Promise((resolve, reject) => setTimeout(() => Math.random() > 0.2 ? resolve(newProfile) : reject(new Error('API error')), 1000));
+  // Example handleProfileUpdate function
+  // const handleProfileUpdate = (newProfile) => {
+  //   const prevProfile = profile;
+  //   optimisticUpdate({
+  //     update: () => setProfile(newProfile),
+  //     request: () => fakeApiUpdateProfile(newProfile),
+  //     rollback: () => setProfile(prevProfile),
+  //     onError: () => alert('Profile update failed.')
+  //   });
+  // };
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-800'} p-6 lg:px-16`}>

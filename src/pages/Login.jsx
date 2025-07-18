@@ -16,7 +16,7 @@ export default function GydeLogin() {
       setIsLoading(false);
       console.log('Login attempted with:', { email, password });
       navigate('/dashboard');
-    }, 1000);
+    }, 3000);
   };
 
   const handleGoogleLogin = () => {
@@ -28,9 +28,20 @@ export default function GydeLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white p-0">
+    <div
+      className="min-h-screen flex items-center justify-center p-0 relative"
+      style={
+        window.innerWidth >= 768
+          ? { backgroundImage: "url('/backgroundscribble.png')", backgroundSize: '130%', backgroundPosition: 'center' }
+          : {}
+      }
+    >
+      {/* Overlay for desktop only */}
+      {window.innerWidth >= 768 && (
+        <div className="absolute inset-0 bg-white opacity-60 z-0 pointer-events-none"></div>
+      )}
       {isLoading && <LoadingScreen />}
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+      <div className="relative w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[600px] bg-white z-10">
         {/* Left: Logo and welcome (desktop only) */}
         <div className="hidden md:flex flex-col justify-end items-start bg-gradient-to-b from-[#0A4B5B] to-[#023047] p-10 relative w-1/2 min-h-full">
           <img
@@ -51,7 +62,10 @@ export default function GydeLogin() {
         </div>
 
         {/* Mobile: Blue section with logo above white card */}
-        <div className="block md:hidden w-full bg-gradient-to-b from-[#0A4B5B] to-[#023047] flex flex-col items-center pt-8 pb-4">
+        <div
+          className="block md:hidden w-full bg-gradient-to-b from-[#0A4B5B] to-[#023047] flex flex-col items-center pt-8 pb-4"
+          style={{}}
+        >
           <img
             src="/Logo.png.png"
             alt="Gyde Logo"
