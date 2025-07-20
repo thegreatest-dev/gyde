@@ -178,9 +178,12 @@ export default function GydeWallet() {
       </header>
       <div className={`min-h-screen pb-24 transition-all duration-300 ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-800'}`}>
         <div className="max-w-6xl mx-auto px-4 lg:px-12 py-6">
-          <div className={`rounded-3xl p-6 mb-8 text-white ${darkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-blue-900 to-blue-700'}` }>
+          <div className={`rounded-3xl p-6 mb-8 text-white flex items-center justify-between ${darkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' : 'bg-gradient-to-br from-blue-900 to-blue-700'}` }>
+            <div>
             <h2 className="text-xl font-semibold">Current Balance</h2>
             <p className="text-3xl font-bold mt-2">₦500,000.00</p>
+            </div>
+            <img src="/wallett.png" alt="Wallet" className="w-24 h-24 object-contain ml-4" />
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8">

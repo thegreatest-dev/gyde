@@ -208,7 +208,10 @@ const BudgetingPreferences = () => {
               <div>
                 <h4 className="font-medium mb-2">Special Dates</h4>
                 {specialDates.length === 0 && (
+                  <>
                   <div className={`mb-3 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Reserve dates for crises or rewards. Tap ‘Add Dates’ to start</div>
+                    <img src="/svp2.png" alt="Special Dates Placeholder" className="block md:hidden mx-auto mb-3 w-32 h-32 object-contain opacity-80" />
+                  </>
                 )}
                 {specialDates.map((date) => (
                   <div key={date.id} className={`flex items-center justify-between rounded-md px-4 py-2 mb-2 cursor-pointer ${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}
@@ -336,7 +339,7 @@ const BudgetingPreferences = () => {
                     type="number"
                     value={savingsPercentage}
                     onChange={(e) => setSavingsPercentage(Number(e.target.value))}
-                    className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center mr-2"
+                    className={`w-20 px-3 py-2 border rounded-lg text-center mr-2 ${darkMode ? 'border-gray-600 bg-gray-800 text-white' : 'border-gray-300 bg-white text-gray-700'}`}
                     min="0"
                     max="100"
                   />

@@ -9,8 +9,8 @@ export default function LoadingScreen() {
         <div style={{ position: 'absolute', inset: 0, zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <BounceLoader color="#F59E42" size={80} aria-label="Loading Spinner" />
         </div>
-        <img
-          src="Logo2.svg"
+      <img 
+        src="Logo2.svg"
           alt="Loading Logo"
           className="absolute inset-0 w-full h-full object-contain"
           style={{ zIndex: 2 }}

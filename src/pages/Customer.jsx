@@ -78,7 +78,7 @@ export default function Customer() {
             <button className={`text-sm font-medium ${darkMode ? 'text-blue-300' : 'text-blue-600'}`}>More &gt;</button>
           </div>
           {inquiries.length === 0 ? (
-            <div className={`rounded-lg text-center py-6 text-gray-400 text-base ${darkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>No records found yet</div>
+          <div className={`rounded-lg text-center py-6 text-gray-400 text-base ${darkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>No records found yet</div>
           ) : (
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {inquiries.map((inq, idx) => (

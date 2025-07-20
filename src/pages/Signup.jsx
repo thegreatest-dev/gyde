@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { User, Mail, Phone, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import VerifyModal from './VerifyModal';
 
 export default function GydeSignUp() {
   const navigate = useNavigate();
@@ -15,6 +17,7 @@ export default function GydeSignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showVerify, setShowVerify] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -48,8 +51,7 @@ export default function GydeSignUp() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
-      console.log('Sign up attempted with:', formData);
-      navigate('/'); // Redirect to login after signup
+      setShowVerify(true);
     }, 1000);
   };
 
@@ -65,22 +67,27 @@ export default function GydeSignUp() {
     navigate('/');
   };
 
+  const handleVerifyClose = () => {
+    setShowVerify(false);
+    navigate('/'); // redirect to login after verification
+  };
+
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 relative"
-      style={
-        window.innerWidth >= 768
-          ? { backgroundImage: "url('/backgroundscribble.png')", backgroundSize: '130%', backgroundPosition: 'center' }
-          : {}
-      }
-    >
-      {/* Overlay for desktop only */}
-      {window.innerWidth >= 768 && (
-        <div className="absolute inset-0 bg-white opacity-60 z-0 pointer-events-none"></div>
-      )}
-      <div
-        className="w-full max-w-md rounded-t-3xl shadow-2xl overflow-hidden block bg-white md:bg-white z-10"
-        style={{}}
+    <div className="relative">
+      <div className={`min-h-screen flex items-center justify-center p-4 relative transition-all duration-300 ${showVerify ? 'filter blur-sm pointer-events-none' : ''}`}
+        style={
+          window.innerWidth >= 768
+            ? { backgroundImage: "url('/backgroundscribble.png')", backgroundSize: '130%', backgroundPosition: 'center' }
+            : {}
+        }
+      >
+        {/* Overlay for desktop only */}
+        {window.innerWidth >= 768 && (
+          <div className="absolute inset-0 bg-white opacity-60 z-0 pointer-events-none"></div>
+        )}
+        <div
+          className="w-full max-w-md rounded-t-3xl shadow-2xl overflow-hidden block bg-white md:bg-white z-10"
+          style={{}}
       >
         <div className="px-8 py-8">
           <button
@@ -171,6 +178,12 @@ export default function GydeSignUp() {
           </div>
         </div>
       </div>
+      </div>
+      <AnimatePresence>
+        {showVerify && (
+          <VerifyModal email={formData.email} onClose={handleVerifyClose} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

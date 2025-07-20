@@ -1,0 +1,14 @@
+{
+  "components": [
+    "Button",
+    "Card",
+    "CardContent",
+    "CardHeader",
+    "CardTitle",
+    "Avatar",
+    "AvatarFallback",
+    "AvatarImage",
+    "Badge"
+  ],
+  "description": "List of reusable UI components used or planned for the project. Add or remove as needed."
+} 
