@@ -27,7 +27,7 @@ export default function GydeDashboard() {
     contributionType: 'fixed',
     contributionValue: '',
     deadline: '',
-    frequency: '',
+    frequency: 'monthly',
     icon: '💰',
   });
   
@@ -56,12 +56,12 @@ export default function GydeDashboard() {
   ];
 
   const budgetCategoryIcons = [
-    <PieChart className="w-5 h-5 md:w-6 md:h-6 text-blue-500" />, // Recurring
-    <PieChart className="w-5 h-5 md:w-6 md:h-6 text-orange-500" />, // Non-recurring
-    <PieChart className="w-5 h-5 md:w-6 md:h-6 text-pink-500" /> // Cheat Day
+    <PieChart className="w-5 h-5 md:w-6 md:h-6 text-blue-500" />,
+    <PieChart className="w-5 h-5 md:w-6 md:h-6 text-orange-500" />,
+    <PieChart className="w-5 h-5 md:w-6 md:h-6 text-pink-500" />
   ];
 
-  const budgetCategoryProgress = [80, 40, 20]; // Example progress values
+  const budgetCategoryProgress = [80, 40, 20];
 
   // Components
   const CircularProgress = ({ percentage, size = 60 }) => {
@@ -110,14 +110,13 @@ export default function GydeDashboard() {
   // Event Handlers
   const handleGoalSubmit = (e) => {
     e.preventDefault();
-    // Validation: require name, target, contributionValue, frequency
     if (!goalForm.name || !goalForm.target || !goalForm.contributionValue || !goalForm.frequency) {
       setGoalError('Please fill in all required fields.');
       return;
     }
     
-    // Calculate progress (0% for new goal)
     const newGoal = {
+      id: Date.now(),
       name: goalForm.name,
       current: 0,
       target: Number(goalForm.target),
@@ -132,7 +131,7 @@ export default function GydeDashboard() {
     optimisticUpdate({
       update: () => setSavingsGoals(prev => [...prev, newGoal]),
       request: () => fakeApiAddGoal(newGoal),
-      rollback: () => setSavingsGoals(prev => prev.filter(g => g !== newGoal)),
+      rollback: () => setSavingsGoals(prev => prev.filter(g => g.id !== newGoal.id)),
       onError: () => setGoalError('Failed to add goal. Please try again.')
     });
     
@@ -143,122 +142,196 @@ export default function GydeDashboard() {
       contributionType: 'fixed',
       contributionValue: '',
       deadline: '',
-      frequency: '',
+      frequency: 'monthly',
       icon: '💰',
     });
     setGoalError('');
   };
 
   // Header Component
-  const DashboardHeader = () => {
-    const { darkMode, toggleDarkMode } = useTheme();
-
-    return (
-      <div>
-        <header className="max-w-6xl mx-auto px-4 py-4 md:py-6 rounded-2xl shadow bg-white/80 dark:bg-gray-900/80 backdrop-blur-md flex items-center justify-between mt-4 mb-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-sm">
-              <img src="/Logo2.svg" alt="Gyde Logo" className="w-8 h-8 object-contain" />
-            </div>
-            <div>
-              <h1 className="text-lg md:text-2xl font-bold leading-tight mb-1">Welcome back, <span className="text-blue-600">David Alfredo</span></h1>
-              <p className="text-xs md:text-sm text-muted-foreground font-medium">Let’s manage your finances today</p>
-            </div>
+  const DashboardHeader = () => (
+    <div>
+      <header className={`max-w-6xl mx-auto px-4 py-4 md:py-6 rounded-2xl shadow-lg ${
+        darkMode 
+          ? 'bg-gray-800/80 border border-gray-700/50' 
+          : 'bg-white/80 border border-white/20'
+      } backdrop-blur-md flex items-center justify-between mt-4 mb-4 transition-all duration-300`}>
+        <div className="flex items-center gap-4">
+          <div className={`w-12 h-12 rounded-xl ${
+            darkMode 
+              ? 'bg-gradient-to-br from-blue-600 to-blue-800' 
+              : 'bg-gradient-to-br from-blue-500 to-blue-700'
+          } flex items-center justify-center shadow-sm transition-colors duration-300`}>
+            <img src="/Logo2.svg" alt="Gyde Logo" className="w-8 h-8 object-contain" />
           </div>
-          <div className="flex items-center gap-2 md:gap-4">
-            <button className="w-10 h-10 rounded-xl flex items-center justify-center bg-transparent hover:bg-blue-100 dark:hover:bg-gray-800 transition" aria-label="Customer care">
-              <Headset className="w-5 h-5 text-blue-500" />
-            </button>
-            <button
-              className="w-10 h-10 rounded-xl flex items-center justify-center bg-transparent hover:bg-blue-100 dark:hover:bg-gray-800 transition"
-              onClick={toggleDarkMode}
-              aria-label="Toggle theme"
-            >
-              {darkMode ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5 text-gray-600" />}
-            </button>
-            <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-blue-100 dark:border-gray-700 flex items-center justify-center">
-              <img
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            </div>
+          <div>
+            <h1 className={`text-lg md:text-2xl font-bold leading-tight mb-1 ${
+              darkMode ? 'text-gray-100' : 'text-gray-900'
+            } transition-colors duration-300`}>
+              Welcome back, <span className="text-blue-600">David Alfredo</span>
+            </h1>
+            <p className={`text-xs md:text-sm font-medium ${
+              darkMode ? 'text-gray-400' : 'text-gray-600'
+            } transition-colors duration-300`}>
+              Let's manage your finances today
+            </p>
           </div>
-        </header>
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="border-b border-gray-200 dark:border-gray-700 mb-4" />
         </div>
+        <div className="flex items-center gap-2 md:gap-4">
+          <button className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+            darkMode 
+              ? 'bg-gray-700/50 hover:bg-gray-600/50' 
+              : 'bg-blue-50 hover:bg-blue-100'
+          } transition-all duration-200`} aria-label="Customer care">
+            <Headset className="w-5 h-5 text-blue-500" />
+          </button>
+          <button
+            className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              darkMode 
+                ? 'bg-gray-700/50 hover:bg-gray-600/50' 
+                : 'bg-gray-100 hover:bg-gray-200'
+            } transition-all duration-200`}
+            onClick={toggleDarkMode}
+            aria-label="Toggle theme"
+          >
+            {darkMode ? 
+              <Sun className="w-5 h-5 text-yellow-400" /> : 
+              <Moon className="w-5 h-5 text-gray-600" />
+            }
+          </button>
+          <div className={`w-10 h-10 rounded-xl overflow-hidden border-2 ${
+            darkMode ? 'border-gray-600' : 'border-blue-100'
+          } flex items-center justify-center transition-colors duration-300`}>
+            <img
+              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+      </header>
+      <div className="max-w-6xl mx-auto px-4">
+        <div className={`border-b ${
+          darkMode ? 'border-gray-700' : 'border-gray-200'
+        } mb-4 transition-colors duration-300`} />
       </div>
-    )
-  }
+    </div>
+  );
 
   // Budget Tracking Component
-  const BudgetTracking = () => {
-    const budgetCategories = [
-      { name: "Recurring Expenses", amount: "₦90,000" },
-      { name: "Non-recurring Expenses", amount: "₦30,000" },
-      { name: "Cheat Day", amount: "₦10,000" },
-    ]
-
-    return (
-      <div className="flex-1 rounded-3xl p-2 md:p-6 bg-white shadow-sm dark:bg-gray-800 border dark:border-gray-700">
-        <div className="flex items-center justify-between mb-2 md:mb-4">
-          <span className="text-base md:text-xl font-semibold">Budget Tracking</span>
-          <button className="p-1 md:p-2 rounded-full hover:bg-blue-100 dark:hover:bg-gray-800 transition" aria-label="Go to Detailed Expenses">
-            <PieChart className="w-5 h-5 md:w-7 md:h-7 text-blue-600" />
-          </button>
-        </div>
-        <div className="space-y-3 md:space-y-4">
-          {budgetCategories.map((category, index) => (
-            <div key={index} className="p-3 md:p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 border border-blue-100 dark:border-gray-700 shadow flex items-center gap-3">
-              <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-gray-900 shadow">
-                {budgetCategoryIcons[index]}
+  const BudgetTracking = () => (
+    <div className={`flex-1 rounded-3xl p-2 md:p-6 ${
+      darkMode 
+        ? 'bg-gray-800/70 border border-gray-700/50' 
+        : 'bg-white/70 border border-white/20'
+    } backdrop-blur-sm shadow-lg transition-all duration-300`}>
+      <div className="flex items-center justify-between mb-2 md:mb-4">
+        <span className={`text-base md:text-xl font-semibold ${
+          darkMode ? 'text-gray-100' : 'text-gray-900'
+        } transition-colors duration-300`}>
+          Budget Tracking
+        </span>
+        <button className={`p-1 md:p-2 rounded-full ${
+          darkMode 
+            ? 'hover:bg-gray-700/50' 
+            : 'hover:bg-blue-100'
+        } transition-all duration-200`} aria-label="Go to Detailed Expenses">
+          <PieChart className="w-5 h-5 md:w-7 md:h-7 text-blue-600" />
+        </button>
+      </div>
+      <div className="space-y-3 md:space-y-4">
+        {budgetCategories.map((category, index) => (
+          <div key={index} className={`p-3 md:p-4 rounded-2xl ${
+            darkMode 
+              ? 'bg-gray-700/50 border border-gray-600/50' 
+              : 'bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200'
+          } shadow-sm flex items-center gap-3 transition-all duration-300 hover:shadow-md`}>
+            <div className={`flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-xl ${
+              darkMode ? 'bg-gray-800' : 'bg-white'
+            } shadow-sm transition-colors duration-300`}>
+              {budgetCategoryIcons[index]}
+            </div>
+            <div className="flex-1">
+              <p className={`font-semibold mb-1 text-xs md:text-base ${
+                darkMode ? 'text-gray-100' : 'text-gray-800'
+              } transition-colors duration-300`}>
+                {category.name}
+              </p>
+              <div className="flex items-center gap-2">
+                <span className={`font-bold text-sm md:text-lg ${
+                  darkMode ? 'text-blue-400' : 'text-blue-600'
+                } transition-colors duration-300`}>
+                  {category.amount}
+                </span>
+                <span className={`text-xs font-medium ${
+                  darkMode ? 'text-gray-400' : 'text-gray-500'
+                } transition-colors duration-300`}>
+                  ({budgetCategoryProgress[index]}%)
+                </span>
               </div>
-              <div className="flex-1">
-                <p className="font-semibold mb-1 text-xs md:text-base text-gray-800 dark:text-gray-100">{category.name}</p>
-                <div className="flex items-center gap-2">
-                  <span className="text-blue-600 dark:text-blue-400 font-bold text-sm md:text-lg">{category.amount}</span>
-                  <span className="text-xs text-gray-400 font-medium">({budgetCategoryProgress[index]}%)</span>
-                </div>
-                <div className="w-full h-2 bg-blue-100 dark:bg-gray-700 rounded-full mt-1">
-                  <div
-                    className={`h-2 rounded-full ${index === 0 ? 'bg-blue-500' : index === 1 ? 'bg-orange-500' : 'bg-pink-500'}`}
-                    style={{ width: `${budgetCategoryProgress[index]}%` }}
-                  ></div>
-                </div>
+              <div className={`w-full h-2 rounded-full mt-1 ${
+                darkMode ? 'bg-gray-600' : 'bg-blue-100'
+              } transition-colors duration-300`}>
+                <div
+                  className={`h-2 rounded-full transition-all duration-500 ${
+                    index === 0 ? 'bg-blue-500' : 
+                    index === 1 ? 'bg-orange-500' : 'bg-pink-500'
+                  }`}
+                  style={{ width: `${budgetCategoryProgress[index]}%` }}
+                ></div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
-    );
-  }
+    </div>
+  );
 
   // Savings Goals Component
   const SavingsGoals = ({ onAddGoal }) => {
     const { savingsGoals } = useContext(SavingsGoalsContext);
 
     return (
-      <div className="flex-1 rounded-3xl p-2 md:p-6 bg-white shadow-sm dark:bg-gray-800 border dark:border-gray-700">
+      <div className={`flex-1 rounded-3xl p-2 md:p-6 ${
+        darkMode 
+          ? 'bg-gray-800/70 border border-gray-700/50' 
+          : 'bg-white/70 border border-white/20'
+      } backdrop-blur-sm shadow-lg transition-all duration-300`}>
         <div className="mb-2 md:mb-6">
-          <span className="text-base md:text-xl font-semibold">Savings Goals</span>
+          <span className={`text-base md:text-xl font-semibold ${
+            darkMode ? 'text-gray-100' : 'text-gray-900'
+          } transition-colors duration-300`}>
+            Savings Goals
+          </span>
         </div>
         {savingsGoals.length === 0 && (
           <div className="flex flex-col items-center mb-2 md:mb-4">
-            <div className="w-28 h-28 md:w-50 md:h-50 mb-2 bg-muted rounded-full flex items-center justify-center">
+            <div className={`w-28 h-28 md:w-32 md:h-32 mb-4 ${
+              darkMode ? 'bg-gray-700' : 'bg-gray-100'
+            } rounded-full flex items-center justify-center transition-colors duration-300`}>
               <img src="/svp2.png" alt="Savings Piggy" className="w-22 h-22 md:w-43 md:h-43 object-contain" />
             </div>
-            <p className="text-center text-xs md:text-sm text-muted-foreground">Ready to save? Add your first goal</p>
+            <p className={`text-center text-xs md:text-sm ${
+              darkMode ? 'text-gray-400' : 'text-gray-600'
+            } transition-colors duration-300`}>
+              Ready to save? Add your first goal
+            </p>
           </div>
         )}
         <div className="space-y-2 md:space-y-4 mb-2 md:mb-6">
           {savingsGoals.map((goal) => (
-            <div key={goal.id} className="flex items-center justify-between p-2 md:p-4 rounded-2xl bg-muted">
+            <div key={goal.id} className={`flex items-center justify-between p-2 md:p-4 rounded-2xl ${
+              darkMode ? 'bg-gray-700/50' : 'bg-gray-100'
+            } transition-colors duration-300`}>
               <div className="flex-1">
-                <p className="font-medium mb-1 text-xs md:text-base">
+                <p className={`font-medium mb-1 text-xs md:text-base ${
+                  darkMode ? 'text-gray-200' : 'text-gray-800'
+                } transition-colors duration-300`}>
                   {goal.icon} {goal.name}
                 </p>
-                <p className="text-blue-600 dark:text-blue-400 font-semibold text-xs md:text-base">
+                <p className={`font-semibold text-xs md:text-base ${
+                  darkMode ? 'text-blue-400' : 'text-blue-600'
+                } transition-colors duration-300`}>
                   ₦{goal.current.toLocaleString()} / ₦{goal.target.toLocaleString()}
                 </p>
               </div>
@@ -266,21 +339,24 @@ export default function GydeDashboard() {
             </div>
           ))}
         </div>
-        <button onClick={onAddGoal} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 md:py-3 px-3 md:px-4 rounded-2xl mt-2 md:mt-6 flex items-center justify-center gap-2 transition-colors text-sm md:text-base">
+        <button 
+          onClick={onAddGoal} 
+          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-2 md:py-3 px-3 md:px-4 rounded-2xl mt-2 md:mt-6 flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] text-sm md:text-base"
+        >
           <Plus className="w-4 h-4 md:w-5 md:h-5" />
           <span>Add Goal</span>
         </button>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <BalanceContext.Provider value={{ balance }}>
       <SavingsGoalsContext.Provider value={{ savingsGoals, setSavingsGoals }}>
-        <div className={`min-h-screen transition-all duration-300 ${
+        <div className={`min-h-screen transition-all duration-500 ${
           darkMode 
-            ? 'bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 text-gray-100' 
-            : 'bg-gradient-to-br from-gray-50 to-blue-50 text-gray-800'
+            ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-800 text-gray-100' 
+            : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 text-gray-800'
         } pb-24`}>
           
           {/* Header Section */}
@@ -288,21 +364,29 @@ export default function GydeDashboard() {
 
           {/* Balance Card Section */}
           <div className="max-w-6xl mx-auto px-4 mb-8">
-            <div className={`rounded-3xl p-8 text-white ${
+            <div className={`rounded-3xl p-8 text-white shadow-2xl transition-all duration-500 ${
               darkMode 
-                ? 'bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700' 
-                : 'bg-gradient-to-br from-blue-600 to-blue-800'
-            }`}>
+                ? 'bg-gradient-to-br from-slate-800 via-gray-800 to-slate-900 border border-gray-700/50' 
+                : 'bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800'
+            } backdrop-blur-sm`}>
               <div className="mb-8 flex items-center justify-between">
                 <div>
-                  <h2 className="text-4xl font-bold mb-2">
+                  <h2 className="text-4xl font-bold mb-2 transition-all duration-300">
                     {showBalance ? `₦${balance.toLocaleString()}` : '•••••••'}
                   </h2>
-                  <p className="text-blue-100 text-lg">Total Balance</p>
+                  <p className={`text-lg ${
+                    darkMode ? 'text-gray-300' : 'text-blue-100'
+                  } transition-colors duration-300`}>
+                    Total Balance
+                  </p>
                 </div>
                 <button
                   onClick={() => setShowBalance(v => !v)}
-                  className="ml-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition"
+                  className={`ml-4 p-3 rounded-full ${
+                    darkMode 
+                      ? 'bg-gray-700/50 hover:bg-gray-600/50' 
+                      : 'bg-white/20 hover:bg-white/30'
+                  } transition-all duration-200 backdrop-blur-sm`}
                   aria-label={showBalance ? 'Hide balance' : 'Show balance'}
                 >
                   {showBalance ? (
@@ -314,12 +398,16 @@ export default function GydeDashboard() {
               </div>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm mb-1">Daily Budget</p>
+                  <p className={`text-sm mb-1 ${
+                    darkMode ? 'text-gray-300' : 'text-blue-100'
+                  } transition-colors duration-300`}>
+                    Daily Budget
+                  </p>
                   <p className="text-2xl font-semibold">₦5,000</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-3xl font-bold">30</span>
-                  <Flame className="w-8 h-8 text-orange-400" />
+                  <Flame className="w-8 h-8 text-orange-400 animate-pulse" />
                 </div>
               </div>
             </div>
@@ -329,32 +417,35 @@ export default function GydeDashboard() {
           <div className="max-w-6xl mx-auto px-4 grid lg:grid-cols-3 gap-6 pb-8">
             {/* Left Column */}
             <div className="lg:col-span-2 flex flex-row md:flex-col gap-2 md:gap-6">
-              {/* Budget Tracking Card */}
               <BudgetTracking />
-
-              {/* Savings Goals Card */}
               <SavingsGoals onAddGoal={() => setShowGoalModal(true)} />
             </div>
 
             {/* Right Column */}
             <div className="space-y-6">
               {/* Recent Activities Card */}
-              <div className={`rounded-3xl p-6 ${
+              <div className={`rounded-3xl p-6 shadow-2xl transition-all duration-500 ${
                 darkMode 
-                  ? 'bg-gradient-to-r from-orange-900 to-red-900 border border-gray-700' 
+                  ? 'bg-gradient-to-r from-orange-900/80 to-red-900/80 border border-gray-700/50' 
                   : 'bg-gradient-to-r from-orange-400 to-red-500'
-              }`}>
+              } backdrop-blur-sm`}>
                 <h3 className="text-xl font-semibold text-white mb-6">Recent Activities</h3>
                 <div className="space-y-4">
                   {recentActivities.map((activity, index) => (
-                    <div key={index} className={`rounded-2xl p-4 flex items-center gap-3 ${
-                      darkMode ? 'bg-gray-900' : 'bg-white'
-                    }`}>
+                    <div key={index} className={`rounded-2xl p-4 flex items-center gap-3 transition-all duration-300 hover:scale-[1.02] ${
+                      darkMode ? 'bg-gray-800/80 backdrop-blur-sm' : 'bg-white'
+                    } shadow-lg`}>
                       <div className="flex-shrink-0">{activity.icon}</div>
                       <div className="flex-1">
-                        <p className="font-medium">{activity.text}</p>
+                        <p className={`font-medium ${
+                          darkMode ? 'text-gray-100' : 'text-gray-900'
+                        } transition-colors duration-300`}>
+                          {activity.text}
+                        </p>
                         {activity.time && (
-                          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <p className={`text-sm ${
+                            darkMode ? 'text-gray-400' : 'text-gray-500'
+                          } transition-colors duration-300`}>
                             {activity.time}
                           </p>
                         )}
@@ -375,104 +466,146 @@ export default function GydeDashboard() {
           {showGoalModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div
-                className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300"
                 onClick={() => setShowGoalModal(false)}
               />
-              <div className={`relative w-full max-w-md rounded-3xl p-6 pb-24 ${
-                darkMode ? 'bg-gray-900 border border-gray-700' : 'bg-white'
-              } md:max-h-[90vh] md:overflow-y-auto scrollbar-hide`}>
+              <div className={`relative w-full max-w-md rounded-3xl p-6 pb-24 shadow-2xl transition-all duration-300 ${
+                darkMode 
+                  ? 'bg-gray-800/95 border border-gray-700/50' 
+                  : 'bg-white/95 border border-white/20'
+              } backdrop-blur-md md:max-h-[90vh] md:overflow-y-auto`}>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold">Add Savings Goal</h2>
+                  <h2 className={`text-xl font-bold ${
+                    darkMode ? 'text-gray-100' : 'text-gray-900'
+                  } transition-colors duration-300`}>
+                    Add Savings Goal
+                  </h2>
                   <button
                     onClick={() => setShowGoalModal(false)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
+                      darkMode 
+                        ? 'hover:bg-gray-700/50 text-gray-300' 
+                        : 'hover:bg-gray-100 text-gray-600'
+                    }`}
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
                 <form onSubmit={handleGoalSubmit} className="space-y-4">
                   <div>
-                    <label htmlFor="goalName" className="block text-sm font-medium mb-1">Goal Name</label>
+                    <label htmlFor="goalName" className={`block text-sm font-medium mb-1 ${
+                      darkMode ? 'text-gray-200' : 'text-gray-700'
+                    } transition-colors duration-300`}>
+                      Goal Name
+                    </label>
                     <input
                       type="text"
                       id="goalName"
                       value={goalForm.name}
                       onChange={(e) => setGoalForm(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                      className={`w-full p-3 rounded-xl border transition-all duration-300 ${
+                        darkMode 
+                          ? 'border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:border-blue-500' 
+                          : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-blue-500'
+                      } focus:ring-2 focus:ring-blue-500/20`}
                       placeholder="e.g., Vacation Fund"
                       required
                     />
                   </div>
                   <div>
-                    <label htmlFor="targetAmount" className="block text-sm font-medium mb-1">Target Amount</label>
+                    <label htmlFor="targetAmount" className={`block text-sm font-medium mb-1 ${
+                      darkMode ? 'text-gray-200' : 'text-gray-700'
+                    } transition-colors duration-300`}>
+                      Target Amount
+                    </label>
                     <input
                       type="number"
                       id="targetAmount"
                       value={goalForm.target}
                       onChange={(e) => setGoalForm(prev => ({ ...prev, target: e.target.value }))}
-                      className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                      className={`w-full p-3 rounded-xl border transition-all duration-300 ${
+                        darkMode 
+                          ? 'border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:border-blue-500' 
+                          : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-blue-500'
+                      } focus:ring-2 focus:ring-blue-500/20`}
                       placeholder="₦1,000,000"
                       required
                     />
                   </div>
                   <div>
-                    <label htmlFor="contributionType" className="block text-sm font-medium mb-1">Contribution Type</label>
+                    <label htmlFor="contributionType" className={`block text-sm font-medium mb-1 ${
+                      darkMode ? 'text-gray-200' : 'text-gray-700'
+                    } transition-colors duration-300`}>
+                      Contribution Type
+                    </label>
                     <select
                       id="contributionType"
                       value={goalForm.contributionType}
                       onChange={(e) => setGoalForm(prev => ({ ...prev, contributionType: e.target.value }))}
-                      className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                      className={`w-full p-3 rounded-xl border transition-all duration-300 ${
+                        darkMode 
+                          ? 'border-gray-600 bg-gray-700/50 text-white focus:border-blue-500' 
+                          : 'border-gray-300 bg-white text-gray-900 focus:border-blue-500'
+                      } focus:ring-2 focus:ring-blue-500/20`}
                     >
                       <option value="fixed">Fixed Amount</option>
                       <option value="percentage">Percentage of Income</option>
                     </select>
                   </div>
-                  {goalForm.contributionType === 'fixed' && (
-                    <div>
-                      <label htmlFor="contributionValue" className="block text-sm font-medium mb-1">Contribution Value</label>
-                      <input
-                        type="number"
-                        id="contributionValue"
-                        value={goalForm.contributionValue}
-                        onChange={(e) => setGoalForm(prev => ({ ...prev, contributionValue: e.target.value }))}
-                        className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                        placeholder="₦50,000"
-                        required
-                      />
-                    </div>
-                  )}
-                  {goalForm.contributionType === 'percentage' && (
-                    <div>
-                      <label htmlFor="contributionPercentage" className="block text-sm font-medium mb-1">Contribution Percentage</label>
-                      <input
-                        type="number"
-                        id="contributionPercentage"
-                        value={goalForm.contributionValue}
-                        onChange={(e) => setGoalForm(prev => ({ ...prev, contributionValue: e.target.value }))}
-                        className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                        placeholder="10%"
-                        required
-                      />
-                    </div>
-                  )}
                   <div>
-                    <label htmlFor="deadline" className="block text-sm font-medium mb-1">Deadline</label>
+                    <label htmlFor="contributionValue" className={`block text-sm font-medium mb-1 ${
+                      darkMode ? 'text-gray-200' : 'text-gray-700'
+                    } transition-colors duration-300`}>
+                      {goalForm.contributionType === 'fixed' ? 'Contribution Amount' : 'Contribution Percentage'}
+                    </label>
+                    <input
+                      type="number"
+                      id="contributionValue"
+                      value={goalForm.contributionValue}
+                      onChange={(e) => setGoalForm(prev => ({ ...prev, contributionValue: e.target.value }))}
+                      className={`w-full p-3 rounded-xl border transition-all duration-300 ${
+                        darkMode 
+                          ? 'border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:border-blue-500' 
+                          : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-blue-500'
+                      } focus:ring-2 focus:ring-blue-500/20`}
+                      placeholder={goalForm.contributionType === 'fixed' ? '₦50,000' : '10'}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="deadline" className={`block text-sm font-medium mb-1 ${
+                      darkMode ? 'text-gray-200' : 'text-gray-700'
+                    } transition-colors duration-300`}>
+                      Deadline
+                    </label>
                     <input
                       type="date"
                       id="deadline"
                       value={goalForm.deadline}
                       onChange={(e) => setGoalForm(prev => ({ ...prev, deadline: e.target.value }))}
-                      className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                      className={`w-full p-3 rounded-xl border transition-all duration-300 ${
+                        darkMode 
+                          ? 'border-gray-600 bg-gray-700/50 text-white focus:border-blue-500' 
+                          : 'border-gray-300 bg-white text-gray-900 focus:border-blue-500'
+                      } focus:ring-2 focus:ring-blue-500/20`}
                       required
                     />
                   </div>
                   <div>
-                    <label htmlFor="frequency" className="block text-sm font-medium mb-1">Frequency</label>
+                    <label htmlFor="frequency" className={`block text-sm font-medium mb-1 ${
+                      darkMode ? 'text-gray-200' : 'text-gray-700'
+                    } transition-colors duration-300`}>
+                      Frequency
+                    </label>
                     <select
                       id="frequency"
                       value={goalForm.frequency}
                       onChange={(e) => setGoalForm(prev => ({ ...prev, frequency: e.target.value }))}
-                      className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                      className={`w-full p-3 rounded-xl border transition-all duration-300 ${
+                        darkMode 
+                          ? 'border-gray-600 bg-gray-700/50 text-white focus:border-blue-500' 
+                          : 'border-gray-300 bg-white text-gray-900 focus:border-blue-500'
+                      } focus:ring-2 focus:ring-blue-500/20`}
                     >
                       <option value="daily">Daily</option>
                       <option value="weekly">Weekly</option>
@@ -480,23 +613,35 @@ export default function GydeDashboard() {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="icon" className="block text-sm font-medium mb-1">Icon</label>
+                    <label htmlFor="icon" className={`block text-sm font-medium mb-1 ${
+                      darkMode ? 'text-gray-200' : 'text-gray-700'
+                    } transition-colors duration-300`}>
+                      Icon
+                    </label>
                     <input
                       type="text"
                       id="icon"
                       value={goalForm.icon}
                       onChange={(e) => setGoalForm(prev => ({ ...prev, icon: e.target.value }))}
-                      className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                      className={`w-full p-3 rounded-xl border transition-all duration-300 ${
+                        darkMode 
+                          ? 'border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:border-blue-500' 
+                          : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-blue-500'
+                      } focus:ring-2 focus:ring-blue-500/20`}
                       placeholder="e.g., 💰, 🎉, 🚗"
                       required
                     />
                   </div>
                   {goalError && (
-                    <p className="text-red-500 text-sm">{goalError}</p>
+                    <div className={`p-3 rounded-lg ${
+                      darkMode ? 'bg-red-900/50 border border-red-700' : 'bg-red-50 border border-red-200'
+                    } transition-colors duration-300`}>
+                      <p className="text-red-500 text-sm font-medium">{goalError}</p>
+                    </div>
                   )}
                   <button
                     type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-2xl mt-6 flex items-center justify-center gap-2 transition-colors"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 px-4 rounded-2xl mt-6 flex items-center justify-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] font-medium"
                   >
                     <Plus className="w-5 h-5" />
                     <span>Add Goal</span>
