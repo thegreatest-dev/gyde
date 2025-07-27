@@ -153,9 +153,9 @@ export default function GydeDashboard() {
     <div>
       <header className={`max-w-6xl mx-auto px-4 py-4 md:py-6 rounded-2xl shadow-lg ${
         darkMode 
-          ? 'bg-gray-800/80 border border-gray-700/50' 
+          ? 'bg-[#181c23]/90 border border-[#23283a] shadow-[0_2px_24px_#0a0c12cc]'
           : 'bg-white/80 border border-white/20'
-      } backdrop-blur-md flex items-center justify-between mt-4 mb-4 transition-all duration-300`}>
+      } backdrop-blur-md flex items-center justify-between mb-4 transition-all duration-300`}>
         <div className="flex items-center gap-4">
           <div className={`w-12 h-12 rounded-xl ${
             darkMode 
@@ -178,11 +178,15 @@ export default function GydeDashboard() {
           </div>
         </div>
         <div className="flex items-center gap-2 md:gap-4">
-          <button className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-            darkMode 
-              ? 'bg-gray-700/50 hover:bg-gray-600/50' 
-              : 'bg-blue-50 hover:bg-blue-100'
-          } transition-all duration-200`} aria-label="Customer care">
+          <button
+            className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              darkMode 
+                ? 'bg-gray-700/50 hover:bg-gray-600/50' 
+                : 'bg-blue-50 hover:bg-blue-100'
+            } transition-all duration-200`}
+            aria-label="Customer care"
+            onClick={() => navigate('/customer')}
+          >
             <Headset className="w-5 h-5 text-blue-500" />
           </button>
           <button
@@ -222,7 +226,7 @@ export default function GydeDashboard() {
   const BudgetTracking = () => (
     <div className={`flex-1 rounded-3xl p-2 md:p-6 ${
       darkMode 
-        ? 'bg-gray-800/70 border border-gray-700/50' 
+        ? 'bg-[#181c23]/80 border border-[#23283a] shadow-[0_2px_16px_#0a0c12cc]'
         : 'bg-white/70 border border-white/20'
     } backdrop-blur-sm shadow-lg transition-all duration-300`}>
       <div className="flex items-center justify-between mb-2 md:mb-4">
@@ -231,11 +235,15 @@ export default function GydeDashboard() {
         } transition-colors duration-300`}>
           Budget Tracking
         </span>
-        <button className={`p-1 md:p-2 rounded-full ${
-          darkMode 
-            ? 'hover:bg-gray-700/50' 
-            : 'hover:bg-blue-100'
-        } transition-all duration-200`} aria-label="Go to Detailed Expenses">
+        <button
+          className={`p-1 md:p-2 rounded-full ${
+            darkMode 
+              ? 'hover:bg-gray-700/50' 
+              : 'hover:bg-blue-100'
+          } transition-all duration-200`}
+          aria-label="Go to Detailed Expenses"
+          onClick={() => navigate('/statistics')}
+        >
           <PieChart className="w-5 h-5 md:w-7 md:h-7 text-blue-600" />
         </button>
       </div>
@@ -294,7 +302,7 @@ export default function GydeDashboard() {
     return (
       <div className={`flex-1 rounded-3xl p-2 md:p-6 ${
         darkMode 
-          ? 'bg-gray-800/70 border border-gray-700/50' 
+          ? 'bg-[#181c23]/80 border border-[#23283a] shadow-[0_2px_16px_#0a0c12cc]'
           : 'bg-white/70 border border-white/20'
       } backdrop-blur-sm shadow-lg transition-all duration-300`}>
         <div className="mb-2 md:mb-6">
@@ -366,7 +374,7 @@ export default function GydeDashboard() {
           <div className="max-w-6xl mx-auto px-4 mb-8">
             <div className={`rounded-3xl p-8 text-white shadow-2xl transition-all duration-500 ${
               darkMode 
-                ? 'bg-gradient-to-br from-slate-800 via-gray-800 to-slate-900 border border-gray-700/50' 
+                ? 'bg-gradient-to-br from-[#1a2233] via-[#23283a] to-[#181c23] border border-[#23283a] shadow-[0_2px_32px_#0a0c12cc]'
                 : 'bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800'
             } backdrop-blur-sm`}>
               <div className="mb-8 flex items-center justify-between">
@@ -426,7 +434,7 @@ export default function GydeDashboard() {
               {/* Recent Activities Card */}
               <div className={`rounded-3xl p-6 shadow-2xl transition-all duration-500 ${
                 darkMode 
-                  ? 'bg-gradient-to-r from-orange-900/80 to-red-900/80 border border-gray-700/50' 
+                  ? 'bg-gradient-to-r from-[#2a1a13]/90 to-[#3a1a1a]/90 border border-[#23283a] shadow-[0_2px_24px_#1a0a0acc]'
                   : 'bg-gradient-to-r from-orange-400 to-red-500'
               } backdrop-blur-sm`}>
                 <h3 className="text-xl font-semibold text-white mb-6">Recent Activities</h3>

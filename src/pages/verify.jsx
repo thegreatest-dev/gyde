@@ -1,8 +1,13 @@
 import React, { useState, useRef } from 'react';
+import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 export default function Verify() {
+  // ...existing code...
+  const [resendDelay, setResendDelay] = useState(30); // initial delay 30s
+  const [resendCountdown, setResendCountdown] = useState(0);
+  const [resendAttempts, setResendAttempts] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || '';
@@ -39,27 +44,64 @@ export default function Verify() {
     }
   };
 
-  const handleVerify = (e) => {
+  const handleVerify = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    setTimeout(() => {
+    try {
+      const response = await axios.post('/token/validate-otp', {
+        email,
+        otp: otp.join('')
+      });
       setIsLoading(false);
-      if (otp.join('') === CORRECT_OTP) {
+      if (response.data && response.data.success) {
         setSuccess(true);
         setError('');
+        // Attempt login after verification
+        try {
+          // You may need to pass password from location.state or prompt user for password
+          const password = location.state?.password || '';
+          if (email && password) {
+            await axios.post('/auth/login', { email, password });
+          }
+        } catch (loginError) {
+          // Optionally handle login error
+        }
         setTimeout(() => navigate('/'), 1800);
       } else {
         setError('Invalid OTP. Please try again.');
         setSuccess(false);
       }
-    }, 1200);
+    } catch (error) {
+      setIsLoading(false);
+      setError('Invalid OTP. Please try again.');
+      setSuccess(false);
+    }
   };
 
-  const handleResend = () => {
-    setResendMsg('A new OTP has been sent to your email.');
+  const handleResend = async () => {
+    if (resendCountdown > 0) return;
+    try {
+      await axios.post('/token/send-otp', { email });
+      setResendMsg('A new OTP has been sent to your email.');
+      setResendAttempts(prev => prev + 1);
+      setResendDelay(30 * (resendAttempts + 1));
+      setResendCountdown(30 * (resendAttempts + 1));
+    } catch (error) {
+      setResendMsg('Failed to send OTP. Please try again.');
+    }
     setTimeout(() => setResendMsg(''), 3000);
   };
+
+  // Countdown effect
+  React.useEffect(() => {
+    if (resendCountdown > 0) {
+      const timer = setInterval(() => {
+        setResendCountdown(c => c - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [resendCountdown]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 p-4">
@@ -119,9 +161,9 @@ export default function Verify() {
           onClick={handleResend}
           className="text-blue-600 hover:underline text-sm mt-2 mb-4"
           type="button"
-          disabled={isLoading || success}
+          disabled={isLoading || success || resendCountdown > 0}
         >
-          Resend OTP
+          {resendCountdown > 0 ? `Resend OTP (${resendCountdown}s)` : 'Resend OTP'}
         </button>
         {resendMsg && <div className="text-green-500 text-xs mb-2">{resendMsg}</div>}
         <button

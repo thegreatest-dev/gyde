@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { User, Mail, Phone, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
@@ -21,13 +22,18 @@ export default function GydeSignUp() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    let newValue = value;
+    if (name === 'phone') {
+      // Only allow numbers
+      newValue = value.replace(/\D/g, '');
+    }
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: newValue
     }));
   };
 
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
 
     const { name, email, phone, password, confirmPassword } = formData;
@@ -49,10 +55,26 @@ export default function GydeSignUp() {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      // Register user
+      await axios.post('/auth/sign-up', {
+        name,
+        email,
+        phone,
+        password
+      });
+      // Send OTP
+      await axios.post('/token/send-otp', { email });
       setIsLoading(false);
       setShowVerify(true);
-    }, 1000);
+    } catch (error) {
+      setIsLoading(false);
+      if (error.response && error.response.data && error.response.data.message) {
+        alert(error.response.data.message);
+      } else {
+        alert('Sign up failed. Please try again.');
+      }
+    }
   };
 
   const handleGoogleSignUp = () => {
