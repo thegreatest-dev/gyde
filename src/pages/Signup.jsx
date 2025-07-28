@@ -59,7 +59,7 @@ export default function GydeSignUp() {
       // Use the same base URL for both requests if possible
       const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
       // Register user
-      const signupRes = await axios.post('https://gyde-backend-wjh9.onrender.com/api/auth/sign-up', {
+      const signupRes = await axios.post('https://gyde-backend-wjh9.onrender.com/api/auth/signup', {
         name,
         email,
         phone,
