@@ -1,7 +1,21 @@
+
 import React, { useState } from 'react';
+import axios from 'axios';
 import LoadingScreen from '../Components/LoadingScreen';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+
+// Token authentication utility
+function isAuthenticated() {
+  const token = localStorage.getItem('authToken');
+  if (!token) return false;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 > Date.now(); // Check expiration
+  } catch {
+    return false;
+  }
+}
 
 export default function GydeLogin() {
   const navigate = useNavigate();
@@ -10,13 +24,30 @@ export default function GydeLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (!email || !password) {
+      alert('Please enter both email and password.');
+      return;
+    }
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await axios.post('http://localhost:5000/api/auth/login', {
+        email,
+        password,
+      });
+      if (res.data && res.data.token) {
+        localStorage.setItem('authToken', res.data.token);
+        console.log('Login successful:', res.data.user);
+        navigate('/dashboard');
+      } else {
+        alert(res.data?.message || 'Login failed. Please try again.');
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Login failed. Please try again.');
+      console.error('Login failed:', err.response?.data?.message || err.message);
+    } finally {
       setIsLoading(false);
-      console.log('Login attempted with:', { email, password });
-      navigate('/dashboard');
-    }, 3000);
+    }
   };
 
   const handleGoogleLogin = () => {

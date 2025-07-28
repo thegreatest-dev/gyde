@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import axios from 'axios';
 import { motion } from 'framer-motion';
 
 export default function VerifyModal({ email, onClose }) {
@@ -35,24 +36,30 @@ export default function VerifyModal({ email, onClose }) {
     }
   };
 
-  const handleVerify = (e) => {
+  const handleVerify = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    setTimeout(() => {
-      setIsLoading(false);
-      if (otp.join('') === CORRECT_OTP) {
+    setSuccess(false);
+
+    try {
+      const fullOtp = otp.join('');
+      const res = await axios.post('http://localhost:5000/api/auth/verify-otp', {
+        email,
+        otp: fullOtp,
+      });
+
+      if (res.data.success) {
         setSuccess(true);
-        setError('');
         setTimeout(() => {
-          setSuccess(false);
           onClose();
         }, 1800);
-      } else {
-        setError('Invalid OTP. Please try again.');
-        setSuccess(false);
       }
-    }, 1200);
+    } catch (err) {
+      setError(err.response?.data?.msg || 'Invalid OTP. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleResend = () => {
