@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import LoadingScreen from '../Components/LoadingScreen';
+import VerifyModal from '../pages/VerifyModal';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
@@ -23,10 +24,13 @@ export default function GydeLogin() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showVerify, setShowVerify] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = async () => {
+    setError('');
     if (!email || !password) {
-      alert('Please enter both email and password.');
+      setError('Please enter both email and password.');
       return;
     }
     setIsLoading(true);
@@ -39,16 +43,35 @@ export default function GydeLogin() {
         localStorage.setItem('authToken', res.data.token);
         console.log('Login successful:', res.data.user);
         navigate('/dashboard');
-      } else {
-        alert(res.data?.message || 'Login failed. Please try again.');
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Login failed. Please try again.');
-      console.error('Login failed:', err.response?.data?.message || err.message);
+      if (err.response?.data?.code === 'UNVERIFIED') {
+        // Prompt user if they want to resend OTP
+        const confirmResend = window.confirm('Account not verified. Would you like to resend the OTP?');
+        if (confirmResend) {
+          await handleResendOtp();
+          setShowVerify(true);
+        } else {
+          setError('Account not verified. Please check your email.');
+        }
+      } else {
+        setError(err.response?.data?.message || 'Login failed. Please try again.');
+        console.error('Login failed:', err.response?.data?.message || err.message);
+      }
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleResendOtp = async () => {
+    try {
+      await axios.post('http://localhost:5000/api/auth/resend-otp', { email });
+      alert('OTP resent! Please check your inbox.');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to resend OTP.');
+    }
+  };
+
 
   const handleGoogleLogin = () => {
     console.log('Google login clicked');
@@ -59,20 +82,28 @@ export default function GydeLogin() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-0 relative"
-      style={
-        window.innerWidth >= 768
-          ? { backgroundImage: "url('/backgroundscribble.png')", backgroundSize: '130%', backgroundPosition: 'center' }
-          : {}
-      }
-    >
-      {/* Overlay for desktop only */}
-      {window.innerWidth >= 768 && (
-        <div className="absolute inset-0 bg-white opacity-60 z-0 pointer-events-none"></div>
+    <>
+      {showVerify && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full flex flex-col items-center">
+            <VerifyModal email={email} onClose={() => setShowVerify(false)} />
+          </div>
+        </div>
       )}
-      {isLoading && <LoadingScreen />}
-      <div className="relative w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[600px] bg-white z-10">
+      <div
+        className="min-h-screen flex items-center justify-center p-0 relative"
+        style={
+          window.innerWidth >= 768
+            ? { backgroundImage: "url('/backgroundscribble.png')", backgroundSize: '130%', backgroundPosition: 'center' }
+            : {}
+        }
+      >
+        {/* Overlay for desktop only */}
+        {window.innerWidth >= 768 && (
+          <div className="absolute inset-0 bg-white opacity-60 z-0 pointer-events-none"></div>
+        )}
+        {isLoading && <LoadingScreen />}
+        <div className="relative w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[600px] bg-white z-10">
         {/* Left: Logo and welcome (desktop only) */}
         <div className="hidden md:flex flex-col justify-end items-start bg-gradient-to-b from-[#0A4B5B] to-[#023047] p-10 relative w-1/2 min-h-full">
           <img
@@ -113,6 +144,7 @@ export default function GydeLogin() {
         {/* Right: Login Form */}
         <div className="flex-1 flex flex-col justify-center px-8 py-12">
           <h2 className="text-3xl font-bold text-gray-800 mb-8 text-left">Login</h2>
+          {error && <div className="text-red-500 text-sm mb-4 text-center">{error}</div>}
           <div className="space-y-6">
             {/* Email Input */}
             <div className="relative">
@@ -217,7 +249,8 @@ export default function GydeLogin() {
             </button>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
