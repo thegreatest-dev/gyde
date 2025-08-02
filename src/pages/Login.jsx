@@ -5,6 +5,7 @@ import LoadingScreen from '../Components/LoadingScreen';
 import VerifyModal from '../pages/VerifyModal';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import ForgotPasswordModal from './ForgotPasswordModal';
 
 // Token authentication utility
 function isAuthenticated() {
@@ -26,6 +27,7 @@ export default function GydeLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
   const [error, setError] = useState('');
+  const [showForgot, setShowForgot] = useState(false);
 
   const handleLogin = async () => {
     setError('');
@@ -89,6 +91,9 @@ export default function GydeLogin() {
             <VerifyModal email={email} onClose={() => setShowVerify(false)} />
           </div>
         </div>
+      )}
+      {showForgot && (
+        <ForgotPasswordModal onClose={() => setShowForgot(false)} />
       )}
       <div
         className="min-h-screen flex items-center justify-center p-0 relative"
@@ -188,6 +193,7 @@ export default function GydeLogin() {
               <button
                 type="button"
                 className="text-sm text-slate-600 hover:text-slate-800 transition-colors underline"
+                onClick={() => setShowForgot(true)}
               >
                 Forgot Password
               </button>
