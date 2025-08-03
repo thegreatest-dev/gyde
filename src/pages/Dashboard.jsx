@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useUser } from '../context/UserContext';
+import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Flame, CheckCircle, Sun, Moon, Menu, X, Home, TrendingUp, Target, Settings, User, Eye, EyeOff, Headset, PieChart } from 'lucide-react';
 import BottomNav from '../Components/BottomNav';
@@ -9,17 +11,21 @@ import { useContext } from 'react';
 import { ThemeContext } from '../Components/ThemeContext';
 
 export default function GydeDashboard() {
+  const { user, loading } = useUser();
   // Navigation and Theme
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useTheme();
-  
+
+  // Dropdown state for profile menu
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
   // State Management
   const [activeTab, setActiveTab] = useState('home');
   const [balance] = useState(500000);
   const [showBalance, setShowBalance] = useState(true);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [goalError, setGoalError] = useState('');
-  
+
   // Goal Form State
   const [goalForm, setGoalForm] = useState({
     name: '',
@@ -30,7 +36,7 @@ export default function GydeDashboard() {
     frequency: 'monthly',
     icon: '💰',
   });
-  
+
   // Data
   const [savingsGoals, setSavingsGoals] = useState([]);
   
@@ -168,7 +174,7 @@ export default function GydeDashboard() {
             <h1 className={`text-lg md:text-2xl font-bold leading-tight mb-1 ${
               darkMode ? 'text-gray-100' : 'text-gray-900'
             } transition-colors duration-300`}>
-              Welcome back, <span className="text-blue-600">David Alfredo</span>
+              Welcome back, <span className="text-blue-600">{loading ? '...' : (user?.name || 'User')}</span>
             </h1>
             <p className={`text-xs md:text-sm font-medium ${
               darkMode ? 'text-gray-400' : 'text-gray-600'
@@ -177,7 +183,7 @@ export default function GydeDashboard() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-2 md:gap-4 relative">
           <button
             className={`w-10 h-10 rounded-xl flex items-center justify-center ${
               darkMode 
@@ -203,16 +209,46 @@ export default function GydeDashboard() {
               <Moon className="w-5 h-5 text-gray-600" />
             }
           </button>
-          <div className={`w-10 h-10 rounded-xl overflow-hidden border-2 ${
-            darkMode ? 'border-gray-600' : 'border-blue-100'
-          } flex items-center justify-center transition-colors duration-300`}>
-            <img
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
+          {/* Profile Dropdown */}
+          <div className="relative">
+            <button
+              className={`w-10 h-10 rounded-xl overflow-hidden border-2 ${
+                darkMode ? 'border-gray-600' : 'border-blue-100'
+              } flex items-center justify-center transition-colors duration-300`}
+              onClick={() => setShowProfileMenu(v => !v)}
+              aria-label="Profile"
+              style={{ padding: 0 }}
+            >
+              <img
+                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            </button>
+            {showProfileMenu && ReactDOM.createPortal(
+              <div className={`fixed top-20 right-8 min-w-[10rem] rounded-xl shadow-lg z-[99999] border ${
+                darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'
+              }`} style={{ boxShadow: '0 8px 32px 8px rgba(0,0,0,0.25)' }}>
+                <button
+                  className="flex items-center w-full px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold gap-2 hover:bg-blue-50 dark:hover:bg-gray-800"
+                  onClick={() => { setShowProfileMenu(false); navigate('/profile'); }}
+                >
+                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM21 20a7 7 0 0 0-14 0"/></svg>
+                  <span>Profile</span>
+                </button>
+                <button
+                  className="flex items-center w-full px-4 py-3 text-blue-700 font-semibold gap-2 hover:bg-blue-50 dark:hover:bg-gray-800"
+                  onClick={() => { setShowProfileMenu(false); /* handle logout here */ }}
+                >
+                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M16 17v1a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v1M7 12h14m0 0-3-3m3 3-3 3"/></svg>
+                  <span>Logout</span>
+                </button>
+              </div>,
+              document.body
+            )}
           </div>
         </div>
+  
       </header>
       <div className="max-w-6xl mx-auto px-4">
         <div className={`border-b ${

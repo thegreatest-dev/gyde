@@ -10,7 +10,7 @@ function BottomNav({ darkMode }) {
     { name: 'home', path: '/dashboard', icon: <Home className="w-6 h-6" /> },
     { name: 'wallet', path: '/wallet', icon: <Wallet className="w-6 h-6" /> },
     { name: 'analytics', path: '/statistics', icon: <BarChart3 className="w-6 h-6" /> },
-    { name: 'profile', path: '/profile', icon: <User className="w-6 h-6" /> }
+    { name: 'ai-assistant', path: '/ai-assistant', icon: <span className="w-6 h-6">🤖</span> }
   ];
 
   return (

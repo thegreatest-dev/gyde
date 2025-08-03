@@ -12,6 +12,8 @@ export default function GydeSignUp() {
     name: '',
     email: '',
     phone: '',
+    gender: '',
+    dob: '',
     password: '',
     confirmPassword: ''
   });
@@ -36,9 +38,9 @@ export default function GydeSignUp() {
   const handleSignUp = async (e) => {
     e.preventDefault();
 
-    const { name, email, phone, password, confirmPassword } = formData;
+    const { name, email, phone, gender, dob, password, confirmPassword } = formData;
 
-    if (!name || !email || !phone || !password || !confirmPassword) {
+    if (!name || !email || !phone || !gender || !dob || !password || !confirmPassword) {
       alert("All fields are required.");
       return;
     }
@@ -63,6 +65,8 @@ export default function GydeSignUp() {
         name,
         email,
         phone,
+        gender,
+        dob,
         password
       });
       // Only send OTP if signup was successful
@@ -140,6 +144,35 @@ export default function GydeSignUp() {
 
               {/* Phone */}
               <InputField icon={<Phone />} name="phone" type="tel" value={formData.phone} onChange={handleInputChange} placeholder="Phone Number" />
+
+              {/* Gender */}
+              <div className="relative">
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleInputChange}
+                  className="w-full pl-4 pr-4 py-4 bg-gray-100 border-0 rounded-xl text-gray-700 focus:ring-2 focus:ring-slate-500 focus:bg-white transition-all duration-200"
+                  required
+                >
+                  <option value="" disabled>Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {/* Date of Birth */}
+              <div className="relative">
+                <input
+                  type="date"
+                  name="dob"
+                  value={formData.dob}
+                  onChange={handleInputChange}
+                  placeholder="Date of Birth"
+                  className="w-full pl-4 pr-4 py-4 bg-gray-100 border-0 rounded-xl text-gray-700 focus:ring-2 focus:ring-slate-500 focus:bg-white transition-all duration-200"
+                  required
+                />
+              </div>
 
               {/* Password */}
               <PasswordField

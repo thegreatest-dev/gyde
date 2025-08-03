@@ -1,5 +1,7 @@
 import React from 'react';
+import { UserProvider } from './context/UserContext';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import PrivateRoute from './PrivateRoute';
 
 // Import your pages
 import Login from './pages/Login';
@@ -14,20 +16,46 @@ import Verify from './pages/verify';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/wallet" element={<Wallet />} />
-        <Route path="/statistics" element={<Statistics />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/accset" element={<AccSet />} />
-        <Route path="/customer" element={<Customer />} />
-        <Route path="/verify" element={<Verify />} />
-      </Routes>
-    </Router>
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/dashboard" element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          } />
+          <Route path="/wallet" element={
+            <PrivateRoute>
+              <Wallet />
+            </PrivateRoute>
+          } />
+          <Route path="/statistics" element={
+            <PrivateRoute>
+              <Statistics />
+            </PrivateRoute>
+          } />
+          <Route path="/profile" element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          } />
+          <Route path="/accset" element={
+            <PrivateRoute>
+              <AccSet />
+            </PrivateRoute>
+          } />
+          <Route path="/customer" element={
+            <PrivateRoute>
+              <Customer />
+            </PrivateRoute>
+          } />
+          <Route path="/verify" element={<Verify />} />
+        </Routes>
+      </Router>
+    </UserProvider>
   );
 }
 
