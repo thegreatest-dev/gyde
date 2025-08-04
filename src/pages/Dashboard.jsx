@@ -11,7 +11,7 @@ import { useContext } from 'react';
 import { ThemeContext } from '../Components/ThemeContext';
 
 export default function GydeDashboard() {
-  const { user, loading } = useUser();
+  const { user, loading, setUser } = useUser();
   // Navigation and Theme
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode } = useTheme();
@@ -238,7 +238,12 @@ export default function GydeDashboard() {
                 </button>
                 <button
                   className="flex items-center w-full px-4 py-3 text-blue-700 font-semibold gap-2 hover:bg-blue-50 dark:hover:bg-gray-800"
-                  onClick={() => { setShowProfileMenu(false); /* handle logout here */ }}
+                  onClick={() => {
+                    setShowProfileMenu(false);
+                    setUser(null);
+                    localStorage.removeItem('token');
+                    navigate('/login');
+                  }}
                 >
                   <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M16 17v1a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v1M7 12h14m0 0-3-3m3 3-3 3"/></svg>
                   <span>Logout</span>

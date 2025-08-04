@@ -53,7 +53,8 @@ const GydeProfilePage = () => {
   });
 
   // Early return after all hooks
-  if (!user) return <p>Loading...</p>;
+  if (loading) return <p>Loading...</p>;
+  if (!user && !loading) return <p className="text-center text-gray-500 mt-10">No user found. Please log in.</p>;
 
   // Streak data
   const streakData = {
@@ -182,12 +183,9 @@ const GydeProfilePage = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
             <p className="text-gray-500 text-sm mb-2">Receive money from friends using your username</p>
-            <input
-              type="text"
-              value={`@${personalData.username}`}
-              onChange={e => handlePersonalChange('username', e.target.value.replace(/^@/, ''))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+            <div className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 select-all cursor-default">
+              @{personalData.username}
+            </div>
           </div>
 
           {/* Next of Kin Section */}

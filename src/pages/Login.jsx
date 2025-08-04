@@ -9,7 +9,7 @@ import { useUser } from '../context/UserContext';
 
 // Token authentication utility
 function isAuthenticated() {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('token');
   if (!token) return false;
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -43,7 +43,7 @@ export default function GydeLogin() {
         password,
       });
       if (res.data && res.data.token) {
-        localStorage.setItem('authToken', res.data.token);
+        localStorage.setItem('token', res.data.token);
         // Fetch and set user profile
         const profile = await axios.get('https://gyde-backend-wjh9.onrender.com/api/auth/user/profile', {
           headers: { Authorization: `Bearer ${res.data.token}` }

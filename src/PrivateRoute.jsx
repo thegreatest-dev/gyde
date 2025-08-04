@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 
 // Checks for auth token in localStorage (same as Login.jsx)
 function isAuthenticated() {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem('token');
   if (!token) return false;
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
