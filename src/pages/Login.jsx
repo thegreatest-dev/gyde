@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import LoadingScreen from '../Components/LoadingScreen';
@@ -6,6 +5,7 @@ import VerifyModal from '../pages/VerifyModal';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import ForgotPasswordModal from './ForgotPasswordModal';
+import { useUser } from '../context/UserContext';
 
 // Token authentication utility
 function isAuthenticated() {
@@ -21,6 +21,7 @@ function isAuthenticated() {
 
 export default function GydeLogin() {
   const navigate = useNavigate();
+  const { setUser } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -43,7 +44,11 @@ export default function GydeLogin() {
       });
       if (res.data && res.data.token) {
         localStorage.setItem('authToken', res.data.token);
-        console.log('Login successful:', res.data.user);
+        // Fetch and set user profile
+        const profile = await axios.get('https://gyde-backend-wjh9.onrender.com/api/auth/user/profile', {
+          headers: { Authorization: `Bearer ${res.data.token}` }
+        });
+        setUser(profile.data);
         navigate('/dashboard');
       }
     } catch (err) {

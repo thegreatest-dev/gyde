@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { User, Mail, Phone, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 import { AnimatePresence } from 'framer-motion';
 import VerifyModal from './VerifyModal';
 
 export default function GydeSignUp() {
   const navigate = useNavigate();
+
+  // Access setUser from UserContext
+  const { setUser } = useUser();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -71,6 +75,15 @@ export default function GydeSignUp() {
       });
       // Only send OTP if signup was successful
       if (signupRes.data && signupRes.data.success !== false) {
+        // Update user context with the new user data (excluding password)
+        setUser({
+          name,
+          email,
+          phone,
+          gender,
+          dob,
+          // You can add more fields if needed
+        });
         const otpRes = await axios.post('https://gyde-backend-wjh9.onrender.com/api/auth/send-otp', { email });
         setShowVerify(true);
       } else {

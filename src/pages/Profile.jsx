@@ -28,7 +28,7 @@ const GydeProfilePage = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showNextOfKinForm, setShowNextOfKinForm] = useState(false);
   const [nextOfKinSaved, setNextOfKinSaved] = useState(false);
-  
+
   // Form states
   const [personalData, setPersonalData] = useState({
     name: user?.name || 'Daniel Akin-Olutegbe',
@@ -42,7 +42,7 @@ const GydeProfilePage = () => {
       relationship: ''
     }
   });
-  
+
   const [securityData, setSecurityData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -51,6 +51,9 @@ const GydeProfilePage = () => {
     newPIN: '',
     confirmPIN: ''
   });
+
+  // Early return after all hooks
+  if (!user) return <p>Loading...</p>;
 
   // Streak data
   const streakData = {
