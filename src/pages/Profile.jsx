@@ -30,6 +30,7 @@ const GydeProfilePage = () => {
   const [nextOfKinSaved, setNextOfKinSaved] = useState(false);
 
   // Form states
+  const [file, setFile] = useState(null);
   const [personalData, setPersonalData] = useState({
     name: user?.name || 'Daniel Akin-Olutegbe',
     username: user?.username || 'danielakin557',
@@ -51,6 +52,9 @@ const GydeProfilePage = () => {
     newPIN: '',
     confirmPIN: ''
   });
+
+
+
 
   // Early return after all hooks
   if (loading) return <p>Loading...</p>;
@@ -90,14 +94,31 @@ const GydeProfilePage = () => {
     setSecurityData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleProfilePictureChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPersonalData(prev => ({ ...prev, profilePicture: e.target.result }));
-      };
-      reader.readAsDataURL(file);
+
+
+  const handleProfilePictureChange = async () => {
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('profilePic', file);
+    try {
+      const res = await axios.put('https://gyde-backend-wjh9.onrender.com/api/auth/user/upload-profile-pic', formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (res.data && res.data.profilePicUrl) {
+        setPersonalData(prev => ({ ...prev, profilePicture: res.data.profilePicUrl }));
+      } else {
+        // fallback: show preview
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          setPersonalData(prev => ({ ...prev, profilePicture: ev.target.result }));
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err) {
+      console.error('Upload failed', err);
+      alert('Profile image upload failed.');
     }
   };
 
@@ -146,7 +167,22 @@ const GydeProfilePage = () => {
               <div className="absolute bottom-2 right-2 bg-blue-600 text-white p-2 rounded-full shadow-lg opacity-80 group-hover:opacity-100 transition-opacity">
                 <Camera className="w-4 h-4" />
               </div>
-              <input type="file" className="hidden" accept="image/*" onChange={handleProfilePictureChange} />
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={e => setFile(e.target.files[0])}
+              />
+          {/* Upload button for profile picture */}
+          {file && (
+            <button
+              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
+              onClick={handleProfilePictureChange}
+              type="button"
+            >
+              Upload Image
+            </button>
+          )}
             </label>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 text-center">{loading ? '...' : (user?.name || personalData.name)}</h2>

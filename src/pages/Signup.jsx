@@ -282,7 +282,15 @@ export default function GydeSignUp() {
                 </button>
               </div>
               <p className="text-xs text-gray-500 text-center mt-6">
-                By creating an account, you agree to our <a href="#" className="text-blue-600 underline">Terms of Service</a> and <a href="#" className="text-blue-600 underline">Privacy Policy</a>
+                By creating an account, you agree to our <a href="#" className="text-blue-600 underline">Terms of Service</a> and{' '}
+                <a
+                  href="https://www.freeprivacypolicy.com/live/7f187260-3249-4862-b6a8-d7a4d87185f6"
+                  className="text-blue-600 underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Privacy Policy
+                </a>
               </p>
             </div>
 
