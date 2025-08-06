@@ -257,7 +257,7 @@ const GydeProfilePage = () => {
               <div className={`w-32 h-32 rounded-full flex items-center justify-center overflow-hidden border-4 shadow-lg transition-all group-hover:scale-105 ${
                 darkMode ? 'bg-gradient-to-br from-gray-800 to-blue-900 border-[#23283a]' : 'bg-gradient-to-br from-blue-100 to-blue-400 border-white'
               }`}>
-                {personalData.profilePicture ? (
+                {personalData.profilePicture && personalData.profilePicture !== "" ? (
                   <img src={personalData.profilePicture} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <User className="w-16 h-16 text-blue-600" />
@@ -278,7 +278,7 @@ const GydeProfilePage = () => {
           </div>
           
           {file && (
-            <Button onClick={handleProfilePictureChange} size="sm">
+            <Button onClick={handleProfilePictureChange} size="sm" variant="primary">
               Upload Image
             </Button>
           )}
@@ -348,7 +348,7 @@ const GydeProfilePage = () => {
             {!hasNextOfKin && !showNextOfKinForm ? (
               <div className="flex items-center justify-between">
                 <span className={darkMode ? 'text-blue-200' : 'text-blue-700'}>No Next of Kin added</span>
-                <Button onClick={() => setShowNextOfKinForm(true)} size="sm">
+                <Button onClick={() => setShowNextOfKinForm(true)} size="sm" variant="primary">
                   Add Next of Kin
                 </Button>
               </div>
@@ -390,6 +390,7 @@ const GydeProfilePage = () => {
                   <Button
                     type="submit"
                     disabled={!(personalData.nextOfKin.name && personalData.nextOfKin.phone && personalData.nextOfKin.relationship)}
+                    variant="primary"
                   >
                     Save Changes
                   </Button>
@@ -441,56 +442,106 @@ const GydeProfilePage = () => {
     </div>
   );
 
+  // ChangePasswordForm for forgot password (must be outside renderSecurityTab)
+  function ChangePasswordForm() {
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [showCurrent, setShowCurrent] = useState(false);
+    const [showNew, setShowNew] = useState(false);
+    const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleChangePassword = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      setMessage('');
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.put(
+          'https://gyde-backend-wjh9.onrender.com/api/auth/change-password',
+          { currentPassword, newPassword },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setMessage(res.data.message || 'Password changed successfully.');
+        setCurrentPassword('');
+        setNewPassword('');
+      } catch (error) {
+        setMessage(error.response?.data?.message || 'Password change failed.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    return (
+      <form onSubmit={handleChangePassword} className="space-y-4">
+        <div className="relative">
+          <InputField
+            label="Current Password"
+            type={showCurrent ? "text" : "password"}
+            value={currentPassword}
+            onChange={e => setCurrentPassword(e.target.value)}
+            placeholder="Enter current password"
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowCurrent(v => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            tabIndex={-1}
+            aria-label={showCurrent ? 'Hide password' : 'Show password'}
+            style={{ padding: 0 }}
+          >
+            {showCurrent ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
+        </div>
+        <div className="relative">
+          <InputField
+            label="New Password"
+            type={showNew ? "text" : "password"}
+            value={newPassword}
+            onChange={e => setNewPassword(e.target.value)}
+            placeholder="Enter new password"
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setShowNew(v => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            tabIndex={-1}
+            aria-label={showNew ? 'Hide password' : 'Show password'}
+            style={{ padding: 0 }}
+          >
+            {showNew ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
+        </div>
+        <Button type="submit" variant="primary" disabled={loading}>
+          {loading ? 'Changing...' : 'Change Password'}
+        </Button>
+        {message && <p className={`text-sm ${message.includes('success') ? 'text-green-600' : 'text-red-600'}`}>{message}</p>}
+      </form>
+    );
+  }
+
   const renderSecurityTab = () => (
     <div className="space-y-6">
       {/* Change Password */}
       <Card title="Change Password" icon={Shield}>
-        <div className="mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Forgot password?</span>
+          <button
+            type="button"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            onClick={() => setShowEditPassword(!showEditPassword)}
+          >
+            <Edit3 className="w-4 h-4 text-orange-500" />
+          </button>
         </div>
-        <button
-          type="button"
-          className="mb-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          onClick={() => setShowEditPassword(!showEditPassword)}
-        >
-          <Edit3 className="w-4 h-4 text-orange-500" />
-        </button>
-        
         {showEditPassword && (
-          <div className="space-y-4">
-            <div className="relative">
-              <InputField
-                label="Current Password"
-                type={showPassword ? "text" : "password"}
-                value={securityData.currentPassword}
-                onChange={e => handleSecurityChange('currentPassword', e.target.value)}
-                placeholder="Enter current password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
-            </div>
-            
-            <InputField
-              label="New Password"
-              type={showPassword ? "text" : "password"}
-              value={securityData.newPassword}
-              onChange={e => handleSecurityChange('newPassword', e.target.value)}
-              placeholder="Enter new password"
-            />
-            
-            <InputField
-              label="Confirm New Password"
-              type={showPassword ? "text" : "password"}
-              value={securityData.confirmPassword}
-              onChange={e => handleSecurityChange('confirmPassword', e.target.value)}
-              placeholder="Confirm new password"
-            />
-          </div>
+          <ChangePasswordForm />
         )}
       </Card>
 
@@ -580,7 +631,7 @@ const GydeProfilePage = () => {
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <Button>Update Security Settings</Button>
+        <Button variant="primary">Update Security Settings</Button>
       </div>
     </div>
   );

@@ -223,12 +223,16 @@ export default function GydeDashboard() {
               aria-label="Profile"
               style={{ padding: 0 }}
             >
-              <img
-                src={user?.profilePic || user?.profilePicture || "/logo192.png"}
-                alt="Profile"
-                className="w-full h-full object-cover"
-                onError={e => { e.target.onerror = null; e.target.src = "/logo192.png"; }}
-              />
+              {user?.profilePic || user?.profilePicture ? (
+                <img
+                  src={user?.profilePic || user?.profilePicture}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                  onError={e => { e.target.onerror = null; e.target.src = "/logo192.png"; }}
+                />
+              ) : (
+                <User className="w-6 h-6 text-blue-600" />
+              )}
             </button>
             {showProfileMenu && ReactDOM.createPortal(
               <div className={`fixed top-20 right-8 min-w-[10rem] rounded-xl shadow-lg z-[99999] border ${
