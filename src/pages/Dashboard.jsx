@@ -174,7 +174,11 @@ export default function GydeDashboard() {
             <h1 className={`text-lg md:text-2xl font-bold leading-tight mb-1 ${
               darkMode ? 'text-gray-100' : 'text-gray-900'
             } transition-colors duration-300`}>
-              Welcome back, <span className="text-blue-600">{loading ? '...' : (user?.name || 'User')}</span>
+              Welcome back, <span className={
+                darkMode
+                  ? 'text-blue-300 drop-shadow-sm'
+                  : 'text-blue-600'
+              }>{loading ? '...' : (user?.name || 'User')}</span>
             </h1>
             <p className={`text-xs md:text-sm font-medium ${
               darkMode ? 'text-gray-400' : 'text-gray-600'
@@ -220,9 +224,10 @@ export default function GydeDashboard() {
               style={{ padding: 0 }}
             >
               <img
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
+                src={user?.profilePic || user?.profilePicture || "/logo192.png"}
                 alt="Profile"
                 className="w-full h-full object-cover"
+                onError={e => { e.target.onerror = null; e.target.src = "/logo192.png"; }}
               />
             </button>
             {showProfileMenu && ReactDOM.createPortal(

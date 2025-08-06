@@ -15,12 +15,18 @@ import {
   Zap, 
   Award, 
   Clock,
-  Home
+  Home,
+  ArrowLeft,
+  Edit3
 } from 'lucide-react';
+import { useTheme } from '../Components/ThemeContext';
 
 const GydeProfilePage = () => {
+  const { darkMode, toggleDarkMode } = useTheme();
   const { user, loading, setUser } = useUser();
   const navigate = useNavigate();
+
+  // State management
   const [activeTab, setActiveTab] = useState('personal');
   const [showPassword, setShowPassword] = useState(false);
   const [showEditPassword, setShowEditPassword] = useState(false);
@@ -28,9 +34,9 @@ const GydeProfilePage = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showNextOfKinForm, setShowNextOfKinForm] = useState(false);
   const [nextOfKinSaved, setNextOfKinSaved] = useState(false);
+  const [file, setFile] = useState(null);
 
   // Form states
-  const [file, setFile] = useState(null);
   const [personalData, setPersonalData] = useState({
     name: user?.name || 'Daniel Akin-Olutegbe',
     username: user?.username || 'danielakin557',
@@ -53,14 +59,37 @@ const GydeProfilePage = () => {
     confirmPIN: ''
   });
 
+  // Fetch profile on mount
+  React.useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('https://gyde-backend-wjh9.onrender.com/api/user/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.data) {
+          setPersonalData(prev => ({
+            ...prev,
+            ...res.data,
+            profilePicture: res.data.profilePic || res.data.profilePicture || prev.profilePicture,
+            nextOfKin: res.data.nextOfKin || prev.nextOfKin
+          }));
+          setUser(res.data);
+        }
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+      }
+    };
+    fetchProfile();
+  }, [setUser]);
 
+  // Early return for loading states
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><p className="text-lg">Loading...</p></div>;
+  if (!user && !loading) return <div className="flex items-center justify-center min-h-screen"><p className="text-gray-500">No user found. Please log in.</p></div>;
 
-
-  // Early return after all hooks
-  if (loading) return <p>Loading...</p>;
-  if (!user && !loading) return <p className="text-center text-gray-500 mt-10">No user found. Please log in.</p>;
-
-  // Streak data
+  // Static data
   const streakData = {
     currentStreak: 28,
     lastLogin: '2 hours ago',
@@ -79,6 +108,7 @@ const GydeProfilePage = () => {
     { id: 'streak', label: 'Streak', icon: TrendingUp }
   ];
 
+  // Event handlers
   const handlePersonalChange = (field, value) => {
     setPersonalData(prev => ({ ...prev, [field]: value }));
   };
@@ -94,14 +124,12 @@ const GydeProfilePage = () => {
     setSecurityData(prev => ({ ...prev, [field]: value }));
   };
 
-
-
   const handleProfilePictureChange = async () => {
     if (!file) return;
     const formData = new FormData();
     formData.append('profilePic', file);
     try {
-      const res = await axios.put('https://gyde-backend-wjh9.onrender.com/api/auth/user/upload-profile-pic', formData, {
+      const res = await axios.put('https://gyde-backend-wjh9.onrender.com/api/user/upload-profile-pic', formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -109,33 +137,19 @@ const GydeProfilePage = () => {
       if (res.data && res.data.profilePicUrl) {
         setPersonalData(prev => ({ ...prev, profilePicture: res.data.profilePicUrl }));
       } else {
-        // fallback: show preview
         const reader = new FileReader();
         reader.onload = (ev) => {
           setPersonalData(prev => ({ ...prev, profilePicture: ev.target.result }));
         };
         reader.readAsDataURL(file);
       }
+      setFile(null);
     } catch (err) {
       console.error('Upload failed', err);
       alert('Profile image upload failed.');
     }
   };
 
-  const hasNextOfKin = personalData.nextOfKin.name && personalData.nextOfKin.phone && personalData.nextOfKin.relationship;
-
-  const StatCard = ({ icon: Icon, label, value, color, subtitle }) => (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
-      <div className="flex items-center justify-between mb-2">
-        <Icon className={`h-6 w-6 ${color}`} />
-        <span className={`text-2xl font-bold ${color}`}>{value}</span>
-      </div>
-      <h3 className="font-medium text-sm text-gray-600 mb-1">{label}</h3>
-      {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
-    </div>
-  );
-
-  // Save profile and update context
   const handleSave = async (updatedProfile) => {
     try {
       const token = localStorage.getItem('token');
@@ -149,6 +163,89 @@ const GydeProfilePage = () => {
     }
   };
 
+  const hasNextOfKin = personalData.nextOfKin.name && personalData.nextOfKin.phone && personalData.nextOfKin.relationship;
+
+  // Components
+  const StatCard = ({ icon: Icon, label, value, color, subtitle }) => (
+    <div className={`rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${darkMode ? 'bg-[#181c23] border border-[#23283a]' : 'bg-white border border-gray-200'}`}>
+      <div className="flex items-center justify-between mb-2">
+        <Icon className={`h-6 w-6 ${color}`} />
+        <span className={`text-2xl font-bold ${color}`}>{value}</span>
+      </div>
+      <h3 className={`font-medium text-sm mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{label}</h3>
+      {subtitle && <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{subtitle}</p>}
+    </div>
+  );
+
+  const InputField = ({ label, type = "text", value, onChange, placeholder, disabled = false, maxLength, className = "" }) => (
+    <div className="space-y-2">
+      <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        disabled={disabled}
+        maxLength={maxLength}
+        className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+          disabled 
+            ? (darkMode ? 'bg-gray-800 border-gray-600 text-gray-400' : 'bg-gray-50 border-gray-300 text-gray-500') 
+            : (darkMode ? 'bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500')
+        } ${className}`}
+      />
+    </div>
+  );
+
+  const Button = ({ children, variant = "primary", size = "md", onClick, disabled = false, className = "", type }) => {
+    const baseClasses = "font-medium rounded-lg transition-all duration-200 flex items-center justify-center";
+    const sizeClasses = {
+      sm: "px-3 py-2 text-sm",
+      md: "px-6 py-3 text-base",
+      lg: "px-8 py-4 text-lg"
+    };
+    const variantClasses = {
+      primary: "bg-blue-600 hover:bg-blue-700 text-white",
+      secondary: `border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white ${darkMode ? 'hover:bg-blue-600' : ''}`,
+      orange: "bg-orange-500 hover:bg-orange-600 text-white",
+      danger: "bg-red-600 hover:bg-red-700 text-white",
+      outline: `border border-gray-300 text-gray-700 hover:bg-gray-50 ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-800' : ''}`
+    };
+    return (
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        type={type}
+        className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+      >
+        {children}
+      </button>
+    );
+  };
+
+  const Card = ({ title, icon: Icon, children, variant = "default", className = "" }) => {
+    const variantClasses = {
+      default: darkMode ? 'bg-[#23283a] border-[#23283a]' : 'bg-white border-gray-200',
+      info: darkMode ? 'bg-blue-900/30 border-blue-800' : 'bg-blue-50 border-blue-200',
+      warning: darkMode ? 'bg-orange-900/30 border-orange-800' : 'bg-orange-50 border-orange-200',
+      danger: darkMode ? 'bg-red-900/30 border-red-800' : 'bg-red-50 border-red-200'
+    };
+
+    return (
+      <div className={`border rounded-xl p-6 shadow-md ${variantClasses[variant]} ${className}`}>
+        {title && (
+          <div className="flex items-center mb-4">
+            {Icon && <Icon className="h-5 w-5 mr-2 text-current" />}
+            <h3 className="text-lg font-semibold">{title}</h3>
+          </div>
+        )}
+        {children}
+      </div>
+    );
+  };
+
+  // Tab content renderers
   const renderPersonalTab = () => (
     <div className="space-y-8">
       {/* Profile Header */}
@@ -157,14 +254,18 @@ const GydeProfilePage = () => {
         <div className="flex flex-col items-center">
           <div className="relative w-32 h-32 mb-4">
             <label className="cursor-pointer group block w-full h-full">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-100 to-blue-400 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg">
+              <div className={`w-32 h-32 rounded-full flex items-center justify-center overflow-hidden border-4 shadow-lg transition-all group-hover:scale-105 ${
+                darkMode ? 'bg-gradient-to-br from-gray-800 to-blue-900 border-[#23283a]' : 'bg-gradient-to-br from-blue-100 to-blue-400 border-white'
+              }`}>
                 {personalData.profilePicture ? (
                   <img src={personalData.profilePicture} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <User className="w-16 h-16 text-blue-600" />
                 )}
               </div>
-              <div className="absolute bottom-2 right-2 bg-blue-600 text-white p-2 rounded-full shadow-lg opacity-80 group-hover:opacity-100 transition-opacity">
+              <div className={`absolute bottom-2 right-2 p-2 rounded-full shadow-lg opacity-80 group-hover:opacity-100 transition-all ${
+                darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white'
+              }`}>
                 <Camera className="w-4 h-4" />
               </div>
               <input
@@ -173,41 +274,44 @@ const GydeProfilePage = () => {
                 accept="image/*"
                 onChange={e => setFile(e.target.files[0])}
               />
-          {/* Upload button for profile picture */}
-          {file && (
-            <button
-              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
-              onClick={handleProfilePictureChange}
-              type="button"
-            >
-              Upload Image
-            </button>
-          )}
             </label>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 text-center">{loading ? '...' : (user?.name || personalData.name)}</h2>
-          <p className="text-gray-500">@{loading ? '...' : (user?.username || personalData.username)}</p>
+          
+          {file && (
+            <Button onClick={handleProfilePictureChange} size="sm">
+              Upload Image
+            </Button>
+          )}
+          
+          <h2 className={`text-2xl font-bold text-center mt-2 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+            {loading ? '...' : (user?.name || personalData.name)}
+          </h2>
+          <p className={`${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>
+            @{loading ? '...' : (user?.username || personalData.username)}
+          </p>
         </div>
 
         {/* Profile Completion Notice */}
         {!hasNextOfKin && !nextOfKinSaved && (
           <div className="flex-1 max-w-md">
-            <div className="bg-orange-50 border border-orange-200 rounded-xl p-6">
+            <Card variant="warning">
               <div className="flex items-start gap-3">
-                <div className="bg-orange-100 text-orange-600 rounded-full p-2 flex-shrink-0">
+                <div className={`rounded-full p-2 flex-shrink-0 ${darkMode ? 'bg-orange-900 text-orange-300' : 'bg-orange-100 text-orange-600'}`}>
                   <Clock className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-orange-800 mb-1">Complete Your Profile</h3>
-                  <p className="text-orange-700 text-sm mb-3">
+                  <h3 className={`font-semibold mb-1 ${darkMode ? 'text-orange-200' : 'text-orange-800'}`}>
+                    Complete Your Profile
+                  </h3>
+                  <p className={`text-sm mb-3 ${darkMode ? 'text-orange-200' : 'text-orange-700'}`}>
                     Finish setting up your account by adding your next of kin information.
                   </p>
-                  <button className="text-blue-600 font-semibold text-sm hover:underline">
+                  <button className="text-blue-600 dark:text-blue-400 font-semibold text-sm hover:underline">
                     COMPLETE PROFILE →
                   </button>
                 </div>
               </div>
-            </div>
+            </Card>
           </div>
         )}
       </div>
@@ -217,35 +321,36 @@ const GydeProfilePage = () => {
         {/* Left Column */}
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
-            <p className="text-gray-500 text-sm mb-2">Receive money from friends using your username</p>
-            <div className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 select-all cursor-default">
+            <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              Username
+            </label>
+            <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              Receive money from friends using your username
+            </p>
+            <div className={`w-full px-4 py-3 rounded-lg select-all cursor-default ${
+              darkMode ? 'bg-gray-900 border border-gray-700 text-gray-200' : 'bg-gray-50 border border-gray-200 text-gray-700'
+            }`}>
               @{personalData.username}
             </div>
           </div>
 
           {/* Next of Kin Section */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-blue-900">Next of Kin</h3>
-              {hasNextOfKin && nextOfKinSaved && (
-                <button
-                  onClick={() => { setShowNextOfKinForm(true); setNextOfKinSaved(false); }}
-                  className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg font-medium transition-colors ml-2"
-                >
-                  Update
-                </button>
-              )}
-            </div>
+          <Card title="Next of Kin" variant="info" className="relative">
+            {hasNextOfKin && nextOfKinSaved && (
+              <button
+                onClick={() => { setShowNextOfKinForm(true); setNextOfKinSaved(false); }}
+                className="absolute top-4 right-4 p-2 rounded-lg bg-blue-100 hover:bg-blue-200 text-blue-700 transition-colors"
+              >
+                <Edit3 className="w-4 h-4" />
+              </button>
+            )}
+            
             {!hasNextOfKin && !showNextOfKinForm ? (
               <div className="flex items-center justify-between">
-                <span className="text-blue-700">No Next of Kin added</span>
-                <button
-                  onClick={() => setShowNextOfKinForm(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                >
+                <span className={darkMode ? 'text-blue-200' : 'text-blue-700'}>No Next of Kin added</span>
+                <Button onClick={() => setShowNextOfKinForm(true)} size="sm">
                   Add Next of Kin
-                </button>
+                </Button>
               </div>
             ) : (showNextOfKinForm || !nextOfKinSaved) ? (
               <form
@@ -259,71 +364,71 @@ const GydeProfilePage = () => {
                   }
                 }}
               >
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    value={personalData.nextOfKin.name}
-                    onChange={e => handleNextOfKinChange('name', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter full name"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                  <input
-                    type="tel"
-                    value={personalData.nextOfKin.phone}
-                    onChange={e => handleNextOfKinChange('phone', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter phone number"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Relationship</label>
-                  <input
-                    type="text"
-                    value={personalData.nextOfKin.relationship}
-                    onChange={e => handleNextOfKinChange('relationship', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="e.g. Brother, Mother, Friend"
-                    required
-                  />
-                </div>
+                <InputField
+                  label="Full Name"
+                  value={personalData.nextOfKin.name}
+                  onChange={e => handleNextOfKinChange('name', e.target.value)}
+                  placeholder="Enter full name"
+                  required
+                />
+                <InputField
+                  label="Phone Number"
+                  type="tel"
+                  value={personalData.nextOfKin.phone}
+                  onChange={e => handleNextOfKinChange('phone', e.target.value)}
+                  placeholder="Enter phone number"
+                  required
+                />
+                <InputField
+                  label="Relationship"
+                  value={personalData.nextOfKin.relationship}
+                  onChange={e => handleNextOfKinChange('relationship', e.target.value)}
+                  placeholder="e.g. Brother, Mother, Friend"
+                  required
+                />
                 <div className="flex justify-end">
-                  <button
+                  <Button
                     type="submit"
-                    className={`bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors ${!(personalData.nextOfKin.name && personalData.nextOfKin.phone && personalData.nextOfKin.relationship) ? 'opacity-50 cursor-not-allowed' : ''}`}
                     disabled={!(personalData.nextOfKin.name && personalData.nextOfKin.phone && personalData.nextOfKin.relationship)}
                   >
                     Save Changes
-                  </button>
+                  </Button>
                 </div>
               </form>
             ) : (
               <div className="space-y-2">
-                <div className="flex items-center"><span className="font-semibold text-gray-700 mr-2">Full Name:</span> <span>{personalData.nextOfKin.name}</span></div>
-                <div className="flex items-center"><span className="font-semibold text-gray-700 mr-2">Phone:</span> <span>{personalData.nextOfKin.phone}</span></div>
-                <div className="flex items-center"><span className="font-semibold text-gray-700 mr-2">Relationship:</span> <span>{personalData.nextOfKin.relationship}</span></div>
+                <div className="flex items-center">
+                  <span className={`font-semibold mr-2 ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>Full Name:</span>
+                  <span className={darkMode ? 'text-blue-100' : 'text-gray-900'}>{personalData.nextOfKin.name}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className={`font-semibold mr-2 ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>Phone:</span>
+                  <span className={darkMode ? 'text-blue-100' : 'text-gray-900'}>{personalData.nextOfKin.phone}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className={`font-semibold mr-2 ${darkMode ? 'text-blue-200' : 'text-gray-700'}`}>Relationship:</span>
+                  <span className={darkMode ? 'text-blue-100' : 'text-gray-900'}>{personalData.nextOfKin.relationship}</span>
+                </div>
               </div>
             )}
-          </div>
+          </Card>
         </div>
 
         {/* Right Column */}
         <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-            <div className="px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-700">
-              {personalData.gender}
-            </div>
-          </div>
+          <InputField
+            label="Gender"
+            value={personalData.gender}
+            disabled
+          />
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
-            <div className="px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-700">
+            <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              Date of Birth
+            </label>
+            <div className={`px-4 py-3 rounded-lg ${
+              darkMode ? 'bg-gray-900 border border-gray-700 text-gray-200' : 'bg-gray-50 border border-gray-300 text-gray-700'
+            }`}>
               {new Date(personalData.dob).toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'long', 
@@ -333,184 +438,149 @@ const GydeProfilePage = () => {
           </div>
         </div>
       </div>
-
-      {/* Save Button removed as requested */}
     </div>
   );
 
   const renderSecurityTab = () => (
     <div className="space-y-6">
       {/* Change Password */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <div className="mb-2">
-          <span className="font-normal text-base text-gray-400">Forgot password?</span>
+      <Card title="Change Password" icon={Shield}>
+        <div className="mb-4">
+          <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Forgot password?</span>
         </div>
-        <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900">
-          <Shield className="h-5 w-5 mr-2 text-orange-500" />
-          Change Password
-          <button
-            type="button"
-            className="ml-2 p-1 rounded hover:bg-orange-100"
-            onClick={() => setShowEditPassword((v) => !v)}
-            aria-label="Edit Password"
-          >
-            <svg className="h-5 w-5 text-orange-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg>
-          </button>
-        </h3>
+        <button
+          type="button"
+          className="mb-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          onClick={() => setShowEditPassword(!showEditPassword)}
+        >
+          <Edit3 className="w-4 h-4 text-orange-500" />
+        </button>
+        
         {showEditPassword && (
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={securityData.currentPassword}
-                  onChange={(e) => handleSecurityChange('currentPassword', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg pr-12 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Enter current password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-              <input
+            <div className="relative">
+              <InputField
+                label="Current Password"
                 type={showPassword ? "text" : "password"}
-                value={securityData.newPassword}
-                onChange={(e) => handleSecurityChange('newPassword', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="Enter new password"
+                value={securityData.currentPassword}
+                onChange={e => handleSecurityChange('currentPassword', e.target.value)}
+                placeholder="Enter current password"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-              <input
-                type={showPassword ? "text" : "password"}
-                value={securityData.confirmPassword}
-                onChange={(e) => handleSecurityChange('confirmPassword', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="Confirm new password"
-              />
-            </div>
+            
+            <InputField
+              label="New Password"
+              type={showPassword ? "text" : "password"}
+              value={securityData.newPassword}
+              onChange={e => handleSecurityChange('newPassword', e.target.value)}
+              placeholder="Enter new password"
+            />
+            
+            <InputField
+              label="Confirm New Password"
+              type={showPassword ? "text" : "password"}
+              value={securityData.confirmPassword}
+              onChange={e => handleSecurityChange('confirmPassword', e.target.value)}
+              placeholder="Confirm new password"
+            />
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Change PIN */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <div className="mb-2">
-          <span className="font-normal text-base text-gray-400">Forgot PIN?</span>
+      <Card title="Change PIN" icon={Target}>
+        <div className="mb-4">
+          <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Forgot PIN?</span>
         </div>
-        <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900">
-          <Target className="h-5 w-5 mr-2 text-blue-600" />
-          Change PIN
-          <button
-            type="button"
-            className="ml-2 p-1 rounded hover:bg-blue-100"
-            onClick={() => setShowPIN((v) => !v)}
-            aria-label="Edit PIN"
-          >
-            <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z"/></svg>
-          </button>
-        </h3>
+        <button
+          type="button"
+          className="mb-4 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          onClick={() => setShowPIN(!showPIN)}
+        >
+          <Edit3 className="w-4 h-4 text-blue-500" />
+        </button>
+        
         {showPIN && (
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Current PIN</label>
-              <input
-                type={showPIN ? "text" : "password"}
-                value={securityData.currentPIN}
-                onChange={(e) => handleSecurityChange('currentPIN', e.target.value)}
-                maxLength="6"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                placeholder="Enter current PIN"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">New PIN</label>
-              <input
-                type={showPIN ? "text" : "password"}
-                value={securityData.newPIN}
-                onChange={(e) => handleSecurityChange('newPIN', e.target.value)}
-                maxLength="6"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                placeholder="Enter new PIN"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New PIN</label>
-              <input
-                type={showPIN ? "text" : "password"}
-                value={securityData.confirmPIN}
-                onChange={(e) => handleSecurityChange('confirmPIN', e.target.value)}
-                maxLength="6"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                placeholder="Confirm new PIN"
-              />
-            </div>
+            <InputField
+              label="Current PIN"
+              type={showPIN ? "text" : "password"}
+              value={securityData.currentPIN}
+              onChange={e => handleSecurityChange('currentPIN', e.target.value)}
+              maxLength="6"
+              placeholder="Enter current PIN"
+            />
+            
+            <InputField
+              label="New PIN"
+              type={showPIN ? "text" : "password"}
+              value={securityData.newPIN}
+              onChange={e => handleSecurityChange('newPIN', e.target.value)}
+              maxLength="6"
+              placeholder="Enter new PIN"
+            />
+            
+            <InputField
+              label="Confirm New PIN"
+              type={showPIN ? "text" : "password"}
+              value={securityData.confirmPIN}
+              onChange={e => handleSecurityChange('confirmPIN', e.target.value)}
+              maxLength="6"
+              placeholder="Confirm new PIN"
+            />
+            
             <button
               type="button"
               onClick={() => setShowPIN(!showPIN)}
-              className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
             >
               {showPIN ? 'Hide PIN' : 'Show PIN'}
             </button>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Delete Account */}
-      <div className="bg-red-50 border border-red-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center text-red-600">
-          <Trash2 className="h-5 w-5 mr-2" />
-          Delete Account
-        </h3>
-        <p className="text-sm text-red-700 mb-4">
+      <Card title="Delete Account" icon={Trash2} variant="danger">
+        <p className="text-sm mb-4">
           This action cannot be undone. All your data will be permanently deleted.
         </p>
         
         {!showDeleteConfirm ? (
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
-          >
+          <Button variant="danger" onClick={() => setShowDeleteConfirm(true)}>
             Delete Account
-          </button>
+          </Button>
         ) : (
           <div className="space-y-3">
             <p className="text-sm font-medium text-red-600">Are you sure you want to delete your account?</p>
             <div className="flex space-x-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-lg transition-colors"
-              >
+              <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button 
+                variant="danger"
                 onClick={() => {
                   alert('Account deletion functionality would be implemented here');
                   setShowDeleteConfirm(false);
                 }}
-                className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg transition-colors"
               >
                 Yes, Delete
-              </button>
+              </Button>
             </div>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Save Button */}
       <div className="flex justify-end">
-        <button className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white px-8 py-3 rounded-lg font-medium transition-all duration-300">
-          Update Security Settings
-        </button>
+        <Button>Update Security Settings</Button>
       </div>
     </div>
   );
@@ -519,11 +589,13 @@ const GydeProfilePage = () => {
     <div className="space-y-8">
       {/* Current Streak Hero */}
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-orange-500 to-blue-600 rounded-full text-white text-3xl font-bold mb-4 shadow-lg">
+        <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full text-white text-3xl font-bold mb-4 shadow-lg ${
+          darkMode ? 'bg-gradient-to-br from-orange-400 to-blue-400' : 'bg-gradient-to-br from-orange-500 to-blue-600'
+        }`}>
           {streakData.currentStreak}
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Day Streak</h2>
-        <p className="text-gray-600">Keep up the great work!</p>
+        <h2 className={`text-3xl font-bold mb-2 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Day Streak</h2>
+        <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Keep up the great work!</p>
       </div>
 
       {/* Stats Grid */}
@@ -534,14 +606,12 @@ const GydeProfilePage = () => {
           value={streakData.lastLogin}
           color="text-blue-600"
         />
-        
         <StatCard
           icon={Award}
           label="Longest Streak"
           value={`${streakData.longestStreak} days`}
           color="text-purple-600"
         />
-        
         <StatCard
           icon={Clock}
           label="Cheat Days"
@@ -549,7 +619,6 @@ const GydeProfilePage = () => {
           color="text-orange-500"
           subtitle="Days remaining"
         />
-        
         <StatCard
           icon={Zap}
           label="Zen Days"
@@ -560,51 +629,46 @@ const GydeProfilePage = () => {
       </div>
 
       {/* Budgeting Performance */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h3 className="text-lg font-semibold mb-6 flex items-center text-gray-900">
-          <Target className="h-5 w-5 mr-2 text-orange-500" />
-          Budgeting Performance
-        </h3>
-        
+      <Card title="Budgeting Performance" icon={Target}>
         <div className="space-y-6">
           <div>
             <div className="flex justify-between items-center mb-3">
-              <span className="text-sm font-medium text-gray-700">Overall Score</span>
+              <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                Overall Score
+              </span>
               <span className="text-3xl font-bold text-orange-500">{streakData.budgetingScore}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-4">
+            <div className={`w-full rounded-full h-4 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
               <div 
                 className="bg-gradient-to-r from-orange-500 to-blue-600 h-4 rounded-full transition-all duration-1000 ease-out"
                 style={{ width: `${streakData.budgetingScore}%` }}
-              ></div>
+              />
             </div>
           </div>
           
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+          <div className={`grid grid-cols-3 gap-4 pt-4 border-t ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">{streakData.achievedGoals}</div>
-              <div className="text-sm text-gray-600">Goals Achieved</div>
+              <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Goals Achieved</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-gray-400">{streakData.monthlyGoals - streakData.achievedGoals}</div>
-              <div className="text-sm text-gray-600">Remaining</div>
+              <div className={`text-2xl font-bold ${darkMode ? 'text-gray-400' : 'text-gray-400'}`}>
+                {streakData.monthlyGoals - streakData.achievedGoals}
+              </div>
+              <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Remaining</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-500">{streakData.monthlyGoals}</div>
-              <div className="text-sm text-gray-600">Total Goals</div>
+              <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Goals</div>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <button className="flex-1 bg-gradient-to-r from-orange-500 to-blue-600 hover:from-orange-600 hover:to-blue-700 text-white py-3 px-6 rounded-lg font-medium transition-all duration-300">
-          View Analytics
-        </button>
-        <button className="flex-1 border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white py-3 px-6 rounded-lg font-medium transition-all duration-300">
-          Set New Goal
-        </button>
+        <Button className="flex-1">View Analytics</Button>
+        <Button variant="secondary" className="flex-1">Set New Goal</Button>
       </div>
     </div>
   );
@@ -619,45 +683,56 @@ const GydeProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-2 sm:px-4 lg:p-8">
+    <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 text-gray-100' : 'bg-gray-50'}`}>
+      <div className={`max-w-6xl mx-auto px-4 py-8 ${darkMode ? 'text-gray-100' : ''}`}>
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 gap-4 sm:gap-0">
-          <div className="w-full sm:w-auto text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+          <div className="text-center sm:text-left">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
               Profile
             </h1>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage your account settings and preferences</p>
+            <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              Manage your account settings and preferences
+            </p>
           </div>
           <button
             onClick={() => navigate('/dashboard')}
-            className="p-3 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-all duration-200"
+            className={`p-3 rounded-lg border transition-all duration-200 hover:scale-105 ${
+              darkMode ? 'bg-gray-800 border-gray-700 hover:shadow-lg' : 'bg-white border-gray-200 hover:shadow-md'
+            }`}
             aria-label="Go to Dashboard"
           >
-            <Home className="w-6 h-6 text-gray-600" />
+            <span className="block sm:hidden">
+              <ArrowLeft className={`w-6 h-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+            </span>
+            <span className="hidden sm:block">
+              <Home className={`w-6 h-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+            </span>
           </button>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="bg-white border border-gray-200 rounded-xl mb-6 sm:mb-8 overflow-x-auto">
-          <nav className="flex flex-row">
-            {tabs.map((tab, index) => {
+        <div className={`border rounded-xl mb-8 overflow-hidden shadow-lg ${
+          darkMode ? 'bg-[#181c23] border-[#23283a]' : 'bg-white border-gray-200'
+        }`}>
+          <nav className="flex">
+            {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 min-w-[100px] flex items-center justify-center space-x-2 px-3 sm:px-6 py-3 sm:py-4 font-medium transition-all duration-200 relative ${
+                  className={`flex-1 flex items-center justify-center space-x-2 px-6 py-4 font-medium transition-all duration-200 relative ${
                     isActive
-                      ? 'text-orange-500 bg-orange-50'
-                      : 'text-gray-500 hover:text-orange-500 hover:bg-orange-50'
+                      ? `text-orange-500 ${darkMode ? 'bg-gray-900' : 'bg-orange-50'}`
+                      : `text-gray-500 hover:text-orange-500 ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-orange-50'}`
                   }`}
                 >
                   <Icon className="h-5 w-5" />
-                  <span className="text-sm sm:text-base">{tab.label}</span>
+                  <span className="hidden sm:inline">{tab.label}</span>
                   {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-blue-600"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-blue-600" />
                   )}
                 </button>
               );
@@ -666,7 +741,9 @@ const GydeProfilePage = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-6 md:p-8">
+        <div className={`border rounded-xl p-6 md:p-8 shadow-lg ${
+          darkMode ? 'bg-[#181c23] border-[#23283a]' : 'bg-white border-gray-200'
+        }`}>
           {renderTabContent()}
         </div>
       </div>
