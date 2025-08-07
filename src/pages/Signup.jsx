@@ -21,11 +21,31 @@ export default function GydeSignUp() {
     password: '',
     confirmPassword: ''
   });
+  const [countryCode, setCountryCode] = useState('+234');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  // Country code to max phone length map
+  const phoneMaxLengthMap = {
+    '+234': 10, // Nigeria
+    '+1': 10,   // USA
+    '+44': 10,  // UK (varies, but 10 for mobile)
+    '+91': 10,  // India
+    '+27': 9,   // South Africa
+    '+233': 9,  // Ghana
+    '+225': 8,  // Ivory Coast
+    '+250': 9,  // Rwanda
+    '+254': 9,  // Kenya
+    '+49': 11,  // Germany (varies)
+    '+33': 9,   // France
+    '+61': 9,   // Australia
+    '+81': 10,  // Japan
+    '+351': 9,  // Portugal
+  };
+  const phoneMaxLength = phoneMaxLengthMap[countryCode] || 10;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -40,13 +60,27 @@ export default function GydeSignUp() {
     }));
   };
 
+  // Combine country code and phone for submission
+  const getFullPhone = () => {
+    // Remove leading zeros from phone
+    const phone = formData.phone.replace(/^0+/, '');
+    return countryCode + phone;
+  };
+
   const handleSignUp = async (e) => {
     e.preventDefault();
 
-    const { name, email, phone, gender, dob, password, confirmPassword } = formData;
+    const { name, email, gender, dob, password, confirmPassword } = formData;
+    const phone = getFullPhone();
 
-    if (!name || !email || !phone || !gender || !dob || !password || !confirmPassword) {
+    setPhoneError('');
+    if (!name || !email || !formData.phone || !gender || !dob || !password || !confirmPassword) {
       alert("All fields are required.");
+      return;
+    }
+    // Phone length validation
+    if (formData.phone.length !== phoneMaxLength) {
+      setPhoneError(`Phone number must be exactly ${phoneMaxLength} digits for the selected country.`);
       return;
     }
 
@@ -178,7 +212,38 @@ export default function GydeSignUp() {
             <form className="space-y-5" onSubmit={handleSignUp}>
               <InputField icon={<User />} name="name" value={formData.name} onChange={handleInputChange} placeholder="Full Name" />
               <InputField icon={<Mail />} name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="Email Address" />
-              <InputField icon={<Phone />} name="phone" type="tel" value={formData.phone} onChange={handleInputChange} placeholder="Phone Number" />
+              <div className="flex gap-2 items-center">
+                <div className="relative">
+                  <select
+                    value={countryCode}
+                    onChange={e => setCountryCode(e.target.value)}
+                    className="pl-4 pr-8 py-4 bg-gray-100 border-0 rounded-xl text-gray-700 focus:ring-2 focus:ring-slate-500 focus:bg-white transition-all duration-200 appearance-none h-full"
+                    style={{ minWidth: 90 }}
+                  >
+                    <option value="+234">🇳🇬 +234</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+44">🇬🇧 +44</option>
+                    <option value="+91">🇮🇳 +91</option>
+                    <option value="+27">🇿🇦 +27</option>
+                    <option value="+233">🇬🇭 +233</option>
+                    <option value="+225">🇨🇮 +225</option>
+                    <option value="+250">🇷🇼 +250</option>
+                    <option value="+254">🇰🇪 +254</option>
+                    <option value="+49">🇩🇪 +49</option>
+                    <option value="+33">🇫🇷 +33</option>
+                    <option value="+61">🇦🇺 +61</option>
+                    <option value="+81">🇯🇵 +81</option>
+                    <option value="+351">🇵🇹 +351</option>
+                    <option value="+234">🇳🇬 +234</option>
+                  </select>
+                </div>
+              <div className="flex-1">
+                <InputField icon={<Phone />} name="phone" type="tel" value={formData.phone} onChange={handleInputChange} placeholder="Phone Number" maxLength={phoneMaxLength} />
+                {phoneError && (
+                  <p className="text-xs text-red-600 mt-1 ml-2">{phoneError}</p>
+                )}
+              </div>
+              </div>
               <div className="space-y-4">
                 <div className="relative">
                   <label htmlFor="gender" className="block text-xs text-gray-500 mb-1 ml-2">Gender</label>

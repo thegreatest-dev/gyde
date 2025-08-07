@@ -464,7 +464,7 @@ export default function GydeDashboard() {
                   <p className="text-2xl font-semibold">₦5,000</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-3xl font-bold">30</span>
+                  <span className="text-3xl font-bold">{user?.loginStreak ?? 0}</span>
                   <Flame className="w-8 h-8 text-orange-400 animate-pulse" />
                 </div>
               </div>

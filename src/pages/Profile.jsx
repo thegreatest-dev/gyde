@@ -22,16 +22,68 @@ import {
 import { useTheme } from '../Components/ThemeContext';
 
 const GydeProfilePage = () => {
+  // State management (move this above all hooks that use it)
+  const [activeTab, setActiveTab] = useState('personal');
+
+  // Motivational phrases for streak page
+  const streakPhrases = [
+    'Excellence is not an act, but a habit. – Aristotle',
+    'Keep showing up. You’re building something greater.',
+    'Small deeds done are better than great deeds planned. – Peter Marshall',
+    'One more login, one step closer.',
+    'Discipline is the bridge between goals and accomplishment. – Jim Rohn',
+    'Stay consistent. Your future self will thank you.',
+    'What you do every day matters more than what you do once in a while. – Gretchen Rubin',
+    'You’re shaping your life—one streak at a time.',
+    'Chains of habit are too light to be felt until they are too heavy to be broken. – Warren Buffett',
+    'Keep the streak alive. Let it carry you forward.',
+    'Don’t break the chain. – Jerry Seinfeld’s productivity mantra',
+    'One day becomes two, then a habit. Don’t stop now.',
+    'Success is the sum of small efforts, repeated day in and day out. – Robert Collier',
+    'Today’s login adds up to tomorrow’s growth.',
+    'Motivation gets you started. Habit keeps you going. – Jim Ryun',
+    'You\'re already in motion—stay in flow.',
+    'Consistency is the key. The chains of habit are forged daily.',
+    'Each login strengthens your momentum.',
+    'The journey of a thousand miles begins with one step. – Lao Tzu',
+    'And one more login keeps you on the path.'
+  ];
+
+  // Pick a random phrase on each mount of the streak tab
+  const [streakPhrase, setStreakPhrase] = useState('');
+  React.useEffect(() => {
+    if (activeTab === 'streak') {
+      setStreakPhrase(streakPhrases[Math.floor(Math.random() * streakPhrases.length)]);
+    }
+    // eslint-disable-next-line
+  }, [activeTab]);
   const { darkMode, toggleDarkMode } = useTheme();
   const { user, loading, setUser } = useUser();
   const navigate = useNavigate();
-
-  // State management
-  const [activeTab, setActiveTab] = useState('personal');
   const [showPassword, setShowPassword] = useState(false);
   const [showEditPassword, setShowEditPassword] = useState(false);
   const [showPIN, setShowPIN] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [deactivatePhrase, setDeactivatePhrase] = useState("");
+
+  // Deactivate account handler
+  const handleDeactivateAccount = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete('https://gyde-backend-wjh9.onrender.com/api/user/delete-account', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      localStorage.removeItem('token');
+      alert('Account deactivated successfully.');
+      navigate('/signup');
+    } catch (error) {
+      alert('Failed to deactivate account.');
+      console.error(error);
+    }
+  };
   const [showNextOfKinForm, setShowNextOfKinForm] = useState(false);
   const [nextOfKinSaved, setNextOfKinSaved] = useState(false);
   const [file, setFile] = useState(null);
@@ -91,9 +143,25 @@ const GydeProfilePage = () => {
 
   // Static data
   const streakData = {
-    currentStreak: 28,
-    lastLogin: '2 hours ago',
-    longestStreak: 45,
+    currentStreak: user?.loginStreak ?? 28,
+    lastLogin: user?.lastLoginDate
+      ? (() => {
+          const date = new Date(user.lastLoginDate);
+          if (isNaN(date.getTime())) return 'Invalid date';
+          const now = new Date();
+          const diffMs = now - date;
+          const diffMins = Math.floor(diffMs / 60000);
+          if (diffMins < 1) return 'just now';
+          if (diffMins < 60) return `${diffMins} min${diffMins === 1 ? '' : 's'} ago`;
+          const diffHours = Math.floor(diffMins / 60);
+          if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+          const diffDays = Math.floor(diffHours / 24);
+          if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+          // If more than a week ago, show the date
+          return date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        })()
+      : 'Never logged in',
+    longestStreak: user?.loginStreak ?? user?.loginCount ?? 45,
     cheatDaysUsed: 3,
     cheatDaysTotal: 5,
     zenDays: 12,
@@ -599,31 +667,40 @@ const GydeProfilePage = () => {
       </Card>
 
       {/* Delete Account */}
-      <Card title="Delete Account" icon={Trash2} variant="danger">
+      <Card title="Deactivate Account" icon={Trash2} variant="danger">
         <p className="text-sm mb-4">
-          This action cannot be undone. All your data will be permanently deleted.
+          This action will deactivate your account. You may lose access to your data and services.
         </p>
-        
-        {!showDeleteConfirm ? (
-          <Button variant="danger" onClick={() => setShowDeleteConfirm(true)}>
-            Delete Account
-          </Button>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-red-600">Are you sure you want to delete your account?</p>
-            <div className="flex space-x-3">
-              <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
-                Cancel
-              </Button>
-              <Button 
-                variant="danger"
-                onClick={() => {
-                  alert('Account deletion functionality would be implemented here');
-                  setShowDeleteConfirm(false);
-                }}
-              >
-                Yes, Delete
-              </Button>
+        <Button variant="danger" onClick={() => setShowDeactivateModal(true)}>
+          Deactivate Account
+        </Button>
+        {showDeactivateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className={`bg-white dark:bg-[#23283a] rounded-xl shadow-xl p-8 max-w-md w-full border ${darkMode ? 'border-[#23283a]' : 'border-gray-200'}`}>
+              <h2 className="text-xl font-bold mb-4 text-red-600">Confirm Account Deactivation</h2>
+              <p className={`mb-4 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>This action is irreversible. To confirm, type <span className="font-semibold">Deactivate Account</span> below:</p>
+              <input
+                type="text"
+                value={deactivatePhrase}
+                onChange={e => setDeactivatePhrase(e.target.value)}
+                placeholder="Type 'Deactivate Account'"
+                className={`w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all mb-4 ${darkMode ? 'bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
+                autoFocus
+              />
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => { setShowDeactivateModal(false); setDeactivatePhrase(""); }}>Cancel</Button>
+                <Button
+                  variant="danger"
+                  disabled={deactivatePhrase !== "Deactivate Account"}
+                  onClick={async () => {
+                    setShowDeactivateModal(false);
+                    setDeactivatePhrase("");
+                    await handleDeactivateAccount();
+                  }}
+                >
+                  Deactivate
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -646,7 +723,7 @@ const GydeProfilePage = () => {
           {streakData.currentStreak}
         </div>
         <h2 className={`text-3xl font-bold mb-2 ${darkMode ? 'text-gray-100' : 'text-gray-900'}`}>Day Streak</h2>
-        <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>Keep up the great work!</p>
+        <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{streakPhrase}</p>
       </div>
 
       {/* Stats Grid */}
