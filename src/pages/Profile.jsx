@@ -22,6 +22,34 @@ import {
 import { useTheme } from '../Components/ThemeContext';
 
 const GydeProfilePage = () => {
+  // Next of Kin form submit handler
+  const handleNextOfKinSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.put(
+        '/api/user/next-of-kin',
+        {
+          fullName,
+          dateOfBirth,
+          relationship,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      alert('Next of kin saved!');
+    } catch (error) {
+      console.error('Error saving next of kin:', error);
+      alert('Failed to save.');
+    }
+  };
+  // Next of Kin individual state fields
+  const [fullName, setFullName] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [relationship, setRelationship] = useState('');
   // State management (move this above all hooks that use it)
   const [activeTab, setActiveTab] = useState('personal');
 
@@ -421,43 +449,33 @@ const GydeProfilePage = () => {
                 </Button>
               </div>
             ) : (showNextOfKinForm || !nextOfKinSaved) ? (
-              <form
-                className="space-y-4"
-                onSubmit={async e => {
-                  e.preventDefault();
-                  if (personalData.nextOfKin.name && personalData.nextOfKin.phone && personalData.nextOfKin.relationship) {
-                    setShowNextOfKinForm(false);
-                    setNextOfKinSaved(true);
-                    await handleSave({ ...personalData, nextOfKin: personalData.nextOfKin });
-                  }
-                }}
-              >
+              <form className="space-y-4" onSubmit={handleNextOfKinSubmit}>
                 <InputField
                   label="Full Name"
-                  value={personalData.nextOfKin.name}
-                  onChange={e => handleNextOfKinChange('name', e.target.value)}
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
                   placeholder="Enter full name"
                   required
                 />
                 <InputField
-                  label="Phone Number"
-                  type="tel"
-                  value={personalData.nextOfKin.phone}
-                  onChange={e => handleNextOfKinChange('phone', e.target.value)}
-                  placeholder="Enter phone number"
+                  label="Date of Birth"
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={e => setDateOfBirth(e.target.value)}
+                  placeholder="Select date of birth"
                   required
                 />
                 <InputField
                   label="Relationship"
-                  value={personalData.nextOfKin.relationship}
-                  onChange={e => handleNextOfKinChange('relationship', e.target.value)}
+                  value={relationship}
+                  onChange={e => setRelationship(e.target.value)}
                   placeholder="e.g. Brother, Mother, Friend"
                   required
                 />
                 <div className="flex justify-end">
                   <Button
                     type="submit"
-                    disabled={!(personalData.nextOfKin.name && personalData.nextOfKin.phone && personalData.nextOfKin.relationship)}
+                    disabled={!(fullName && dateOfBirth && relationship)}
                     variant="primary"
                   >
                     Save Changes
