@@ -45,7 +45,7 @@ export default function Verify() {
     setIsLoading(true);
     setError('');
     try {
-      const response = await axios.post('http://localhost:5000/api/token/validate-otp', {
+      const response = await axios.post('https://gyde-backend-wjh9.onrender.com/api/token/validate-otp', {
         email,
         otp: otp.join('')
       });
@@ -58,7 +58,7 @@ export default function Verify() {
           // You may need to pass password from location.state or prompt user for password
           const password = location.state?.password || '';
           if (email && password) {
-            await axios.post('http://localhost:5000/api/auth/login', { email, password });
+            await axios.post('https://gyde-backend-wjh9.onrender.com/api/auth/login', { email, password });
           }
         } catch (loginError) {
           // Optionally handle login error
@@ -78,7 +78,7 @@ export default function Verify() {
   const handleResend = async () => {
     if (resendCountdown > 0) return;
     try {
-      await axios.post('http://localhost:5000/api/token/send-otp', { email });
+      await axios.post('https://gyde-backend-wjh9.onrender.com/api/token/send-otp', { email });
       setResendMsg('A new OTP has been sent to your email.');
       setResendAttempts(prev => prev + 1);
       setResendCountdown(30 * (resendAttempts + 1));

@@ -11,7 +11,7 @@ export const UserProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     if (!token) return setLoading(false);
 
-    axios.get('http://localhost:5000/api/auth/user/profile', {
+    axios.get('https://gyde-backend-wjh9.onrender.com/api/auth/user/profile', {
       headers: {
         Authorization: `Bearer ${token}`
       }

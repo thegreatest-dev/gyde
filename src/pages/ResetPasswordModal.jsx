@@ -23,7 +23,7 @@ export default function ResetPasswordModal({ email, onClose }) {
     }
     setIsLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/auth/reset-password', {
+      await axios.post('https://gyde-backend-wjh9.onrender.com/api/auth/reset-password', {
         email,
         otp,
         newPassword

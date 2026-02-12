@@ -20,7 +20,7 @@ export default function ForgotPasswordModal({ onClose, onOTPSent }) {
     }
     setIsLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
+      await axios.post('https://gyde-backend-wjh9.onrender.com/api/auth/forgot-password', { email });
       setSuccess('OTP sent to your email!');
       setTimeout(() => setShowReset(true), 1000);
       if (onOTPSent) onOTPSent(email);

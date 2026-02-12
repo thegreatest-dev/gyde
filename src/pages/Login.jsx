@@ -38,14 +38,14 @@ export default function GydeLogin() {
     }
     setIsLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/login', {
+      const res = await axios.post('https://gyde-backend-wjh9.onrender.com/api/auth/login', {
         email,
         password,
       });
       if (res.data && res.data.token) {
         localStorage.setItem('token', res.data.token);
         // Fetch and set user profile
-        const profile = await axios.get('http://localhost:5000/api/auth/user/profile', {
+        const profile = await axios.get('https://gyde-backend-wjh9.onrender.com/api/auth/user/profile', {
           headers: { Authorization: `Bearer ${res.data.token}` }
         });
         setUser(profile.data);
@@ -72,7 +72,7 @@ export default function GydeLogin() {
 
   const handleResendOtp = async () => {
     try {
-      await axios.post('http://localhost:5000/api/auth/resend-otp', { email });
+      await axios.post('https://gyde-backend-wjh9.onrender.com/api/auth/resend-otp', { email });
       alert('OTP resent! Please check your inbox.');
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to resend OTP.');
