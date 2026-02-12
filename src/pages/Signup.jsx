@@ -123,7 +123,7 @@ export default function GydeSignUp() {
       // Use the same base URL for both requests if possible
       const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:5000';
       // Register user
-      const signupRes = await axios.post('https://gyde-backend-wjh9.onrender.com/api/auth/signup', {
+      const signupRes = await axios.post('http://localhost:5000/api/auth/signup', {
         name,
         email,
         phone,
@@ -142,7 +142,7 @@ export default function GydeSignUp() {
           dob,
           // You can add more fields if needed
         });
-        const otpRes = await axios.post('https://gyde-backend-wjh9.onrender.com/api/auth/send-otp', { email });
+        const otpRes = await axios.post('http://localhost:5000/api/auth/send-otp', { email });
         setShowVerify(true);
       } else {
         alert(signupRes.data?.msg || "Sign up failed. Please try again.");
@@ -399,7 +399,7 @@ const InputField = ({ icon, name, value, onChange, placeholder, type = 'text' })
 // Exported OTP verification function for use in OTP modal
 export const verifyOTP = async (email, otp) => {
   try {
-    const response = await axios.post('https://gyde-backend-wjh9.onrender.com/api/auth/verify-otp', {
+    const response = await axios.post('http://localhost:5000/api/auth/verify-otp', {
       email,
       otp,
     });

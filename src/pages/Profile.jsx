@@ -99,7 +99,7 @@ const GydeProfilePage = () => {
   const handleDeactivateAccount = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete('https://gyde-backend-wjh9.onrender.com/api/user/delete-account', {
+      await axios.delete('http://localhost:5000/api/user/delete-account', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -144,7 +144,7 @@ const GydeProfilePage = () => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('https://gyde-backend-wjh9.onrender.com/api/user/profile', {
+        const res = await axios.get('http://localhost:5000/api/user/profile', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -225,7 +225,7 @@ const GydeProfilePage = () => {
     const formData = new FormData();
     formData.append('profilePic', file);
     try {
-      const res = await axios.put('https://gyde-backend-wjh9.onrender.com/api/user/upload-profile-pic', formData, {
+      const res = await axios.put('http://localhost:5000/api/user/upload-profile-pic', formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -249,7 +249,7 @@ const GydeProfilePage = () => {
   const handleSave = async (updatedProfile) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.put('/user/profile', updatedProfile, {
+      const res = await axios.put('http://localhost:5000/api/user/profile', updatedProfile, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(res.data);
@@ -544,7 +544,7 @@ const GydeProfilePage = () => {
       try {
         const token = localStorage.getItem('token');
         const res = await axios.put(
-          'https://gyde-backend-wjh9.onrender.com/api/auth/change-password',
+          'http://localhost:5000/api/auth/change-password',
           { currentPassword, newPassword },
           {
             headers: {
