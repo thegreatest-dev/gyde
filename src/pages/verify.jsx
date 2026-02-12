@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 
 export default function Verify() {
   // ...existing code...
-  const [resendDelay, setResendDelay] = useState(30); // initial delay 30s
   const [resendCountdown, setResendCountdown] = useState(0);
   const [resendAttempts, setResendAttempts] = useState(0);
   const navigate = useNavigate();
@@ -17,9 +16,6 @@ export default function Verify() {
   const [isLoading, setIsLoading] = useState(false);
   const [resendMsg, setResendMsg] = useState('');
   const inputRefs = useRef([]);
-
-  // Fake OTP for demo
-  const CORRECT_OTP = '123456';
 
   const handleChange = (e, idx) => {
     const val = e.target.value.replace(/\D/g, '');
@@ -85,7 +81,6 @@ export default function Verify() {
       await axios.post('/token/send-otp', { email });
       setResendMsg('A new OTP has been sent to your email.');
       setResendAttempts(prev => prev + 1);
-      setResendDelay(30 * (resendAttempts + 1));
       setResendCountdown(30 * (resendAttempts + 1));
     } catch (error) {
       setResendMsg('Failed to send OTP. Please try again.');

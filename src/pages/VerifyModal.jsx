@@ -10,9 +10,6 @@ export default function VerifyModal({ email, onClose }) {
   const [resendMsg, setResendMsg] = useState('');
   const inputRefs = useRef([]);
 
-  // Fake OTP for demo
-  const CORRECT_OTP = '123456';
-
   const handleChange = (e, idx) => {
     const val = e.target.value.replace(/\D/g, '');
     if (!val) return;

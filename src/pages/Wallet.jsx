@@ -1,11 +1,8 @@
  // adjust path if needed
  import React, { useState } from 'react';
  import {
-  CreditCard,
   Plus,
   User,
-  Building,
-  Mail,
   ChevronDown,
   Wallet,
   Calendar
