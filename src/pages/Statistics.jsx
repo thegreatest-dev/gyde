@@ -1,16 +1,5 @@
 import React, { useState, useContext, createContext } from 'react';
 import BottomNav from '../Components/BottomNav';
-import {
-  ChevronDown,
-  ChevronUp,
-  Plus,
-  PiggyBank,
-  DollarSign,
-  Home,
-  CreditCard,
-  Wallet,
-  Settings
-} from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { useTheme } from '../Components/ThemeContext';
 import { optimisticUpdate } from '../optimisticUpdate';
@@ -21,13 +10,6 @@ export const BalanceContext = createContext();
 
 const BudgetingPreferences = () => {
   const { darkMode } = useTheme();
-  const [expandedSections, setExpandedSections] = useState({
-    lightHeavyDays: true,
-    monthlyBudget: true,
-    generalSavings: true,
-    goalSavings: true,
-    rolloverSettings: true
-  });
   const [showSecondPart, setShowSecondPart] = useState(false);
 
   const [dailyBudgetEnabled, setDailyBudgetEnabled] = useState(true);
@@ -118,15 +100,6 @@ const BudgetingPreferences = () => {
 
   // Fake API call for optimistic update demo
   const fakeApiAddSpecialDate = (dateObj) => new Promise((resolve, reject) => setTimeout(() => Math.random() > 0.2 ? resolve(dateObj) : reject(new Error('API error')), 1000));
-
-  const handleAddSpecialDate = (dateObj) => {
-    optimisticUpdate({
-      update: () => setSpecialDates(prev => [...prev, dateObj]),
-      request: () => fakeApiAddSpecialDate(dateObj),
-      rollback: () => setSpecialDates(prev => prev.filter(d => d !== dateObj)),
-      onError: () => setDateError('Failed to add date. Please try again.')
-    });
-  };
 
   return (
     <div className={`min-h-screen pb-32 transition-all duration-300 ${
